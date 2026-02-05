@@ -100,8 +100,7 @@ Complete all extraction steps before writing any code.
 #### Step 1: Get Site Information
 
 Ask the user:
-- **Site URL** - The website to migrate
-- **Sitemap URL** - Usually `[site]/sitemap.xml` (helps track all pages)
+- **Sitemap URL** - Full URL, e.g. `https://example.com/sitemap.xml` (the root domain can be extracted from this)
 - **Any pages to skip?** - Admin areas, login pages, etc.
 
 #### Step 2: Set Up Scraping Tools
