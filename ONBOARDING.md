@@ -160,7 +160,7 @@ From the site's CSS, extract **exact computed values** using Playwright. Use `wi
 
 **Colors** (extract from computed styles):
 - Primary, secondary, accent colors
-- Background colors (page, cards, dark sections)
+- Background color **for each distinct section** on the page (map which background goes with which block type — don't just extract a few global values)
 - Text colors (headings, body, muted)
 - Link colors and hover states
 - Overlay opacity values (e.g. hero dark overlays)
@@ -188,18 +188,30 @@ From the site's CSS, extract **exact computed values** using Playwright. Use `wi
 
 #### Step 5: Analyze Content Patterns
 
-For each page, identify:
-- Hero sections (large headings, background images)
-- Feature grids (cards with icons)
-- Call-to-action sections
-- Text content blocks
-- Media (images, videos)
-- Navigation structure
-- Footer content
+For each page, identify content sections and record **layout details** for each:
+
+**Per section, record:**
+- Section type (hero, feature grid, CTA, text+image, etc.)
+- Background color or image for that section
+- Column layout (1-col, 2-col side-by-side, 3-col grid, etc.)
+- Image position relative to text (left, right, above, below)
+- Whether image/text sides alternate across repeated sections
+- Text alignment (left, center, right)
+
+**Navigation — extract in detail:**
+- Top-level nav items
+- **Dropdown/mega menus** — which items have sub-menus, what's in them
+- Mobile behavior (hamburger menu, slide-out, etc.)
+- Sticky/fixed positioning
+
+**Footer — extract in detail:**
+- Link groups and their items
+- Social links
+- Copyright text
 
 **Don't assume specific blocks.** Create blocks based on what you actually find.
 
-**Ask the user:** "I found these content patterns: [list]. I'll create a block for each. Does this look right?"
+**Ask the user:** "I found these content patterns: [list with layout details]. I'll create a block for each. Does this look right?"
 
 #### Step 6: Plan Phases
 
@@ -229,6 +241,8 @@ For each unique pattern:
 1. Create `src/blocks/[pattern-name]/index.ts` with Zod schema
 2. Create `src/blocks/[pattern-name]/renderer.tsx` component
 3. Export from `src/blocks/index.ts`
+
+**Use the extracted layout data in each renderer** — image position (left/right), background color, column layout, and text alignment must match what was scraped, not default to a generic layout.
 
 #### Step 8: Build Header & Footer
 
