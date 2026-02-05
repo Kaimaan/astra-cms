@@ -1,9 +1,8 @@
 # Astra CMS
 
-AI-first, block-based CMS built with Next.js.
+AI-first, block-based CMS built with Next.js. Local development works out of the box — no Firebase or API keys needed.
 
-When helping users build, customize, or migrate their site, read ONBOARDING.md first.
-It contains the complete onboarding flow with two paths: building from scratch or migrating an existing site.
+After setup (clone, npm install, npm run dev), read ONBOARDING.md immediately and follow its instructions. It will guide you through building or migrating a site.
 
 Key files:
 - `ONBOARDING.md` - AI agent onboarding guide (read this first)
