@@ -1,0 +1,122 @@
+{
+  "id": "page_home",
+  "schemaVersion": 2,
+  "locale": "en-GB",
+  "paths": {
+    "en-GB": ""
+  },
+  "title": "Welcome to Astra CMS",
+  "status": "published",
+  "publishedAt": "2024-01-01T00:00:00.000Z",
+  "blocks": [
+    {
+      "id": "hero_welcome",
+      "type": "hero",
+      "version": 1,
+      "props": {
+        "title": "Welcome to Astra CMS",
+        "subtitle": "AI-First Content Management",
+        "description": "Build and manage content with AI assistance. Designed for organizations where tech teams set up, design teams customize, and content teams edit.",
+        "alignment": "center",
+        "cta": {
+          "label": "Open Admin",
+          "href": "/admin",
+          "variant": "primary"
+        },
+        "secondaryCta": {
+          "label": "View on GitHub",
+          "href": "https://github.com",
+          "variant": "outline"
+        }
+      }
+    },
+    {
+      "id": "features_roles",
+      "type": "features",
+      "version": 1,
+      "props": {
+        "title": "Built for Organizations",
+        "subtitle": "Three-layer architecture",
+        "features": [
+          {
+            "icon": "Code",
+            "title": "Tech Team",
+            "description": "Clone the repo, set up infrastructure, deploy and maintain. Full control over the codebase."
+          },
+          {
+            "icon": "Palette",
+            "title": "Design Team",
+            "description": "Create blocks and components using AI tools like Cursor or Claude Code. No need to understand the full codebase."
+          },
+          {
+            "icon": "Edit",
+            "title": "Content Team",
+            "description": "Edit pages through the Admin UI. No coding required. Just pick blocks and fill in content."
+          }
+        ],
+        "columns": "3"
+      }
+    },
+    {
+      "id": "features_tech",
+      "type": "features",
+      "version": 1,
+      "props": {
+        "title": "Technical Highlights",
+        "features": [
+          {
+            "icon": "Layers",
+            "title": "Block-Based",
+            "description": "Pages are composed of blocks. Each block has a schema, version, and renderer."
+          },
+          {
+            "icon": "Database",
+            "title": "Local or Firebase",
+            "description": "Works locally with JSON files. Switch to Firebase for production."
+          },
+          {
+            "icon": "Globe",
+            "title": "i18n Built-in",
+            "description": "Locale-aware routing from day one. Support multiple languages and regions."
+          },
+          {
+            "icon": "Lock",
+            "title": "Role-Based Access",
+            "description": "Admin, editor, and viewer roles for controlling who can do what."
+          }
+        ],
+        "columns": "4"
+      }
+    },
+    {
+      "id": "cta_start",
+      "type": "cta",
+      "version": 1,
+      "props": {
+        "title": "Ready to get started?",
+        "description": "This page is stored in /content/pages/page_home.json - edit it or create new pages in the admin!",
+        "cta": {
+          "label": "Go to Admin",
+          "href": "/admin",
+          "variant": "primary"
+        },
+        "variant": "highlighted"
+      }
+    },
+    {
+      "id": "richtext_quickstart",
+      "type": "rich-text",
+      "version": 1,
+      "props": {
+        "content": "<h2>Quick Start</h2><ol><li><strong>Explore:</strong> This page loads from <code>/content/pages/page_home.json</code></li><li><strong>Edit:</strong> Open the Admin at <a href=\"/admin\">/admin</a> to manage pages</li><li><strong>Create Blocks:</strong> Add new blocks in <code>/src/blocks/</code> - each block is a folder with index.ts and renderer.tsx</li><li><strong>Deploy:</strong> When ready for production, switch to Firebase in <code>/src/infrastructure/index.ts</code></li></ol><h3>Features</h3><ul><li><strong>Redirects:</strong> Old URLs automatically redirect to new ones when you rename pages</li><li><strong>Revision History:</strong> Every edit is tracked - restore any previous version</li><li><strong>Scheduled Publishing:</strong> Set content to go live at a future date</li><li><strong>Locale-specific URLs:</strong> Different paths per language (e.g., /services vs /palvelut)</li><li><strong>Blog & Team:</strong> Built-in support for posts and team member collections</li></ul>",
+        "maxWidth": "md"
+      }
+    }
+  ],
+  "seo": {
+    "metaTitle": "Astra CMS - AI-First Content Management",
+    "metaDescription": "Build and manage content with AI assistance. Designed for organizations."
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

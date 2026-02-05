@@ -1,0 +1,44 @@
+{
+  "id": "default",
+  "schemaVersion": 1,
+  "globals": {
+    "header": {
+      "logo": {
+        "text": "Astra CMS"
+      },
+      "navigation": [
+        { "label": "Home", "href": "/" },
+        { "label": "About", "href": "/about" }
+      ],
+      "cta": {
+        "label": "Admin",
+        "href": "/admin"
+      },
+      "sticky": true
+    },
+    "footer": {
+      "logo": {
+        "text": "Astra CMS"
+      },
+      "description": "AI-first, block-based CMS for organizations.",
+      "linkGroups": [
+        {
+          "title": "Product",
+          "links": [
+            { "label": "Features", "href": "/#features" },
+            { "label": "Documentation", "href": "/docs" }
+          ]
+        },
+        {
+          "title": "Resources",
+          "links": [
+            { "label": "GitHub", "href": "https://github.com" },
+            { "label": "Community", "href": "/community" }
+          ]
+        }
+      ],
+      "copyright": "© 2024 Astra CMS. Open source under MIT license."
+    }
+  },
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables from design tokens */
+:root {
+  --color-primary: 79 70 229; /* indigo-600 */
+  --color-secondary: 139 92 246; /* violet-500 */
+  --color-background: 255 255 255;
+  --color-foreground: 15 23 42;
+}
+
+/* Base styles */
+body {
+  @apply bg-white text-gray-900 antialiased;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better focus styles */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary-500/20 ring-offset-2;
+}
+
+/* Typography plugin fallback */
+.prose {
+  @apply text-gray-700 leading-relaxed;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply text-gray-900 font-semibold tracking-tight;
+}
+
+.prose h1 {
+  @apply text-4xl mt-0 mb-6;
+}
+
+.prose h2 {
+  @apply text-2xl mt-12 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl mt-8 mb-3;
+}
+
+.prose a {
+  @apply text-primary-600 hover:text-primary-700 transition-colors underline-offset-2;
+}
+
+.prose strong {
+  @apply font-semibold text-gray-900;
+}
+
+.prose ul,
+.prose ol {
+  @apply my-4;
+}
+
+.prose li {
+  @apply my-2;
+}
+
+.prose p {
+  @apply my-4;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-gray-200 pl-4 italic text-gray-600;
+}
+
+.prose code {
+  @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800;
+}
+
+.prose pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto;
+}
+
+.prose img {
+  @apply rounded-xl;
+}
+
+/* Admin specific styles */
+.admin-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Scrollbar styling */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Glass morphism effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-xl;
+}
