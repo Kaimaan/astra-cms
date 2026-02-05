@@ -94,7 +94,7 @@
       "version": 1,
       "props": {
         "title": "Ready to get started?",
-        "description": "This page is stored in /content/pages/page_home.json - edit it or create new pages in the admin!",
+        "description": "Ask your AI assistant to read ONBOARDING.md for a step-by-step guide to building or migrating your site.",
         "cta": {
           "label": "Go to Admin",
           "href": "/admin",
@@ -108,7 +108,7 @@
       "type": "rich-text",
       "version": 1,
       "props": {
-        "content": "<h2>Quick Start</h2><ol><li><strong>Explore:</strong> This page loads from <code>/content/pages/page_home.json</code></li><li><strong>Edit:</strong> Open the Admin at <a href=\"/admin\">/admin</a> to manage pages</li><li><strong>Create Blocks:</strong> Add new blocks in <code>/src/blocks/</code> - each block is a folder with index.ts and renderer.tsx</li><li><strong>Deploy:</strong> When ready for production, switch to Firebase in <code>/src/infrastructure/index.ts</code></li></ol><h3>Features</h3><ul><li><strong>Redirects:</strong> Old URLs automatically redirect to new ones when you rename pages</li><li><strong>Revision History:</strong> Every edit is tracked - restore any previous version</li><li><strong>Scheduled Publishing:</strong> Set content to go live at a future date</li><li><strong>Locale-specific URLs:</strong> Different paths per language (e.g., /services vs /palvelut)</li><li><strong>Blog & Team:</strong> Built-in support for posts and team member collections</li></ul>",
+        "content": "<h2>Quick Start</h2><ol><li><strong>AI Onboarding:</strong> Ask your AI to read <code>ONBOARDING.md</code> for a guided setup</li><li><strong>Explore:</strong> This page loads from <code>/content/pages/page_home.json</code></li><li><strong>Edit:</strong> Open the Admin at <a href=\"/admin\">/admin</a> to manage pages</li><li><strong>Create Blocks:</strong> Add new blocks in <code>/src/blocks/</code> - each block is a folder with index.ts and renderer.tsx</li><li><strong>Deploy:</strong> When ready for production, switch to Firebase in <code>/src/infrastructure/index.ts</code></li></ol><h3>Features</h3><ul><li><strong>Redirects:</strong> Old URLs automatically redirect to new ones when you rename pages</li><li><strong>Revision History:</strong> Every edit is tracked - restore any previous version</li><li><strong>Scheduled Publishing:</strong> Set content to go live at a future date</li><li><strong>Locale-specific URLs:</strong> Different paths per language (e.g., /services vs /palvelut)</li><li><strong>Blog & Team:</strong> Built-in support for posts and team member collections</li></ul>",
         "maxWidth": "md"
       }
     }

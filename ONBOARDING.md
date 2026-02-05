@@ -88,14 +88,23 @@ Create page content in `content/pages/`:
 
 If the user has an existing website to migrate:
 
-### Step 1: Get Site Information
+> **IMPORTANT: Do NOT start writing code until you complete the Extraction Phase.**
+> The extraction phase uses Playwright to scrape the actual site and collect real data (computed styles, content, assets). All code you write in the Build Phase must be based on this extracted data, not guesses.
+
+---
+
+### Extraction Phase
+
+Complete all extraction steps before writing any code.
+
+#### Step 1: Get Site Information
 
 Ask the user:
 - **Site URL** - The website to migrate
 - **Sitemap URL** - Usually `[site]/sitemap.xml` (helps track all pages)
 - **Any pages to skip?** - Admin areas, login pages, etc.
 
-### Step 2: Set Up Scraping Tools
+#### Step 2: Set Up Scraping Tools
 
 Install Playwright for headless browser scraping:
 
@@ -104,7 +113,7 @@ npm install playwright --save-dev
 npx playwright install chromium
 ```
 
-### Step 3: Create Migration Script
+#### Step 3: Scrape the Site
 
 Create `scripts/migrate-site.ts` that:
 
@@ -142,21 +151,21 @@ async function migrateSite(siteUrl: string, sitemapUrl?: string) {
 }
 ```
 
-### Step 4: Extract Design System
+#### Step 4: Extract Design System
 
-From the site's CSS, extract:
+From the site's CSS, extract **exact computed values** using Playwright:
 
 | Data | Source | Output |
 |------|--------|--------|
 | Colors | `--primary-color`, computed styles | `astra.config.ts` colors |
-| Fonts | `font-family` rules | `astra.config.ts` typography |
+| Fonts | `font-family`, `font-size`, `font-weight`, `line-height` | `astra.config.ts` typography |
 | Spacing | padding, margin, gap patterns | `astra.config.ts` spacing |
 | Shadows | `box-shadow` values | `astra.config.ts` shadows |
 | Radius | `border-radius` values | `astra.config.ts` radius |
 
-**Ask the user:** "I extracted these design tokens from your site: [list colors, fonts]. Should I adjust any of them?"
+**Ask the user:** "I extracted these design tokens from your site: [list colors, fonts, spacing]. Should I adjust any of them?"
 
-### Step 5: Analyze Content Patterns
+#### Step 5: Analyze Content Patterns
 
 For each page, identify:
 - Hero sections (large headings, background images)
@@ -171,52 +180,72 @@ For each page, identify:
 
 **Ask the user:** "I found these content patterns: [list]. I'll create a block for each. Does this look right?"
 
-### Step 6: Create Blocks
+#### Step 6: Plan Phases
+
+For large sites (50+ pages), propose migration phases to the user:
+- **Phase 1:** Design system + core blocks + homepage + main pages
+- **Phase 2:** Secondary pages (products, services)
+- **Phase 3:** Collection pages (testimonials, case studies)
+- **Phase 4:** Blog posts
+
+**Ask the user:** "I suggest migrating in [N] phases. Here's the breakdown: [list]. Does this order work?"
+
+> **Checkpoint: Do not proceed until you have:**
+> - Extracted design tokens via Playwright (not guessed from visual inspection)
+> - Identified all content patterns from actual scraped HTML
+> - Got user approval on the design tokens and block list
+> - Agreed on migration phases with the user
+
+---
+
+### Build Phase
+
+Now build using the extracted data.
+
+#### Step 7: Create Blocks
 
 For each unique pattern:
 1. Create `src/blocks/[pattern-name]/index.ts` with Zod schema
 2. Create `src/blocks/[pattern-name]/renderer.tsx` component
 3. Export from `src/blocks/index.ts`
 
-### Step 7: Build Header & Footer
+#### Step 8: Build Header & Footer
 
-Extract and rebuild the site's navigation:
-- Scrape header: logo, nav links, CTA buttons
-- Scrape footer: link groups, social links, copyright text
-- Update `content/site.json` with extracted content
+Rebuild the site's navigation using extracted data:
+- Update `content/site.json` with extracted header/footer content
 - Customize `src/components/global/Header.tsx` and `Footer.tsx` to match the original design
 
 **Don't reuse existing components as-is.** Rebuild them to match the user's site.
 
-### Step 8: Build Pages
+#### Step 9: Build Pages
 
-For each URL in the sitemap:
+For each URL in the current phase:
 1. Create `content/pages/page_[slug].json`
 2. Map extracted content to block instances
 3. Set SEO metadata from extracted meta tags
 
-### Step 9: Download Assets
+#### Step 10: Download Assets
 
 - Download images to `public/assets/` or `content/assets/`
 - Update image URLs in block props
 - For YouTube/Vimeo, preserve embed URLs
 
-### Step 10: Verify Migration
+#### Step 11: Verify Phase
 
-Use sitemap as checklist:
+After each phase, verify:
 
 ```typescript
 // scripts/verify-migration.ts
-// For each URL in sitemap:
+// For each URL in current phase:
 // - [ ] Page JSON exists
 // - [ ] All sections have corresponding blocks
 // - [ ] Images are downloaded
 // - [ ] SEO metadata is set
 ```
 
-**Report to user:** "Migration complete. Created [X] pages covering [Y]% of your sitemap. [List any issues]"
+**Report to user:** "Phase [N] complete. Created [X] pages. [List any issues]. Ready to proceed to Phase [N+1]?"
 
-### Step 11: Cleanup
+#### Step 12: Cleanup (after final phase)
 
 ```bash
 rm -rf scripts/
@@ -296,3 +325,4 @@ Before finishing, confirm:
 - [ ] Assets downloaded/configured
 - [ ] `npm run dev` works without errors
 - [ ] User has previewed and approved the site
+- [ ] Cleaned up onboarding files: remove `ONBOARDING.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, and update `page_home.json` to replace the getting-started content with the user's actual homepage
