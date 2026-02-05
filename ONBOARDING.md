@@ -156,15 +156,33 @@ async function migrateSite(siteUrl: string, sitemapUrl?: string) {
 
 #### Step 4: Extract Design System
 
-From the site's CSS, extract **exact computed values** using Playwright:
+From the site's CSS, extract **exact computed values** using Playwright. Use `window.getComputedStyle()` on key elements to get real values — do not guess.
 
-| Data | Source | Output |
-|------|--------|--------|
-| Colors | `--primary-color`, computed styles | `astra.config.ts` colors |
-| Fonts | `font-family`, `font-size`, `font-weight`, `line-height` | `astra.config.ts` typography |
-| Spacing | padding, margin, gap patterns | `astra.config.ts` spacing |
-| Shadows | `box-shadow` values | `astra.config.ts` shadows |
-| Radius | `border-radius` values | `astra.config.ts` radius |
+**Colors** (extract from computed styles):
+- Primary, secondary, accent colors
+- Background colors (page, cards, dark sections)
+- Text colors (headings, body, muted)
+- Link colors and hover states
+- Overlay opacity values (e.g. hero dark overlays)
+
+**Typography** (extract from headings, body, buttons):
+- `font-family` — exact font name (e.g. "Oswald", not "sans-serif")
+- `font-size` — for h1, h2, h3, h4, body, small text, buttons
+- `font-weight` — for each element (headings often differ from body)
+- `line-height` — for headings and body text
+- `letter-spacing` — especially for display/heading fonts
+
+**Spacing** (extract from sections, cards, buttons):
+- Section padding (top/bottom)
+- Container max-width
+- Card padding
+- Gap between grid items
+- Button padding
+
+**Other**:
+- `box-shadow` — exact CSS values, not just "light/medium/heavy"
+- `border-radius` — exact values per element type (buttons, cards, images)
+- `transition` values for hover effects
 
 **Ask the user:** "I extracted these design tokens from your site: [list colors, fonts, spacing]. Should I adjust any of them?"
 
