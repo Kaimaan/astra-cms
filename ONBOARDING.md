@@ -20,13 +20,17 @@ Astra CMS is a **block-based content management system** built with Next.js. It 
 
 ## First Step: Ask the User
 
-When the user first interacts with you, ask:
+> **MANDATORY: You MUST ask this question before doing anything else. Do NOT skip this step or assume the answer.**
+
+Ask the user:
 
 > "Welcome to Astra CMS! Would you like to:
 > 1. **Build a new site from scratch** - I'll help you design your design system and create custom blocks
 > 2. **Migrate an existing website** - I'll help you scrape your current site and convert it to Astra
 >
 > Which would you prefer?"
+
+**Do NOT proceed to Path A or Path B until the user has explicitly answered.** Even if the user says "start building" or similar, ask this question first — they may want to migrate an existing site.
 
 ---
 
