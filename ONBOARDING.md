@@ -123,7 +123,8 @@ npx playwright install chromium
 Create `scripts/migrate-site.ts` that:
 
 1. **Fetches sitemap.xml** - Gets list of all pages
-2. **For each page, extracts:**
+2. **Detects site language** - Extract `<html lang="...">` attribute from the homepage. Use this to set `i18n.defaultLocale` and `i18n.locales` in `astra.config.ts` (e.g. `fi-FI` for Finnish, `sv-SE` for Swedish). Use the correct locale in all page JSON files.
+3. **For each page, extracts:**
    - CSS custom properties and computed styles → design tokens
    - Content structure and patterns → block definitions
    - Images and videos → asset downloads
@@ -243,6 +244,11 @@ For each unique pattern:
 1. Create `src/blocks/[pattern-name]/index.ts` with Zod schema
 2. Create `src/blocks/[pattern-name]/renderer.tsx` component
 3. Export from `src/blocks/index.ts`
+4. **Register in admin editor** so the block is editable:
+   - `src/components/editor/ChatPanel.tsx` — add entry to `BLOCK_META` (label, description, icon), `BLOCK_PROPERTIES` (editable fields), and `BLOCK_SCHEMAS` (schema description for AI)
+   - `src/components/editor/EditableBlockRenderer.tsx` — add a preview case in the `BlockPreviewContent` switch statement
+
+**Without step 4, blocks will render on the public site but cannot be edited in admin.**
 
 **Use the extracted layout data in each renderer** — image position (left/right), background color, column layout, and text alignment must match what was scraped, not default to a generic layout.
 
@@ -261,11 +267,42 @@ For each URL in the current phase:
 2. Map extracted content to block instances
 3. Set SEO metadata from extracted meta tags
 
+**Every page JSON must include these fields** for the admin UI to work (edit/view/delete buttons, status badges):
+```json
+{
+  "id": "page_[slug]",
+  "schemaVersion": 2,
+  "locale": "fi-FI",
+  "paths": { "fi-FI": "palvelut" },
+  "title": "Page Title",
+  "status": "published",
+  "blocks": [],
+  "seo": { "metaTitle": "...", "metaDescription": "..." },
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+Use the detected locale (from Step 3) in `locale` and `paths` — not the default `en-GB`.
+
 #### Step 10: Download Assets
 
-- Download images to `public/assets/` or `content/assets/`
-- Update image URLs in block props
-- For YouTube/Vimeo, preserve embed URLs
+Save files and register them so they appear in the admin media library:
+
+1. Download images/videos to `/public/uploads/` with naming format `{name}-{timestamp}{ext}`
+2. Register each asset in `/content/assets/assets.json` with this structure:
+   ```json
+   {
+     "id": "asset_{timestamp}_{random}",
+     "type": "image",
+     "filename": "hero-bg-1706000000000.jpg",
+     "url": "/uploads/hero-bg-1706000000000.jpg",
+     "mimeType": "image/jpeg",
+     "size": 123456,
+     "createdAt": "2024-01-01T00:00:00.000Z"
+   }
+   ```
+3. Reference assets in block props as `/uploads/{filename}`
+4. For YouTube/Vimeo, preserve embed URLs (no download needed)
 
 #### Step 11: Verify Phase
 
