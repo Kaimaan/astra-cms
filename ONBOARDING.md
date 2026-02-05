@@ -67,7 +67,16 @@ For each page section they need:
 - Follow pattern in `src/blocks/hero/`
 - Define Zod schema for props
 
-### Step 5: Build Pages
+### Step 5: Set Up Header & Footer
+
+Customize the site-wide navigation:
+- Update `content/site.json` with logo, navigation links, footer content
+- Modify `src/components/global/Header.tsx` and `Footer.tsx` as needed
+- The existing components are starting points - rebuild them to match the user's design
+
+**Ask the user:** "What should be in your header? (logo, nav items, CTA button?) And footer? (link groups, social links, copyright?)"
+
+### Step 6: Build Pages
 
 Create page content in `content/pages/`:
 - One JSON file per page
@@ -169,20 +178,30 @@ For each unique pattern:
 2. Create `src/blocks/[pattern-name]/renderer.tsx` component
 3. Export from `src/blocks/index.ts`
 
-### Step 7: Build Pages
+### Step 7: Build Header & Footer
+
+Extract and rebuild the site's navigation:
+- Scrape header: logo, nav links, CTA buttons
+- Scrape footer: link groups, social links, copyright text
+- Update `content/site.json` with extracted content
+- Customize `src/components/global/Header.tsx` and `Footer.tsx` to match the original design
+
+**Don't reuse existing components as-is.** Rebuild them to match the user's site.
+
+### Step 8: Build Pages
 
 For each URL in the sitemap:
 1. Create `content/pages/page_[slug].json`
 2. Map extracted content to block instances
 3. Set SEO metadata from extracted meta tags
 
-### Step 8: Download Assets
+### Step 9: Download Assets
 
 - Download images to `public/assets/` or `content/assets/`
 - Update image URLs in block props
 - For YouTube/Vimeo, preserve embed URLs
 
-### Step 9: Verify Migration
+### Step 10: Verify Migration
 
 Use sitemap as checklist:
 
@@ -197,7 +216,7 @@ Use sitemap as checklist:
 
 **Report to user:** "Migration complete. Created [X] pages covering [Y]% of your sitemap. [List any issues]"
 
-### Step 10: Cleanup
+### Step 11: Cleanup
 
 ```bash
 rm -rf scripts/
@@ -271,6 +290,8 @@ Before finishing, confirm:
 - [ ] Design system configured in `astra.config.ts`
 - [ ] Required UI components created
 - [ ] Blocks created for all content patterns
+- [ ] Header & Footer customized (don't assume existing ones are wanted)
+- [ ] `content/site.json` updated with navigation config
 - [ ] Pages created (all sitemap URLs for migration)
 - [ ] Assets downloaded/configured
 - [ ] `npm run dev` works without errors
