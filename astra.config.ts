@@ -1,4 +1,13 @@
 /**
+ * ONBOARDING: Customize this file with your brand's design tokens.
+ *
+ * See ONBOARDING.md for guidance. The AI agent will update these values
+ * based on your brand guidelines or extracted from your existing site's CSS.
+ *
+ * Remove this comment when you start building.
+ */
+
+/**
  * Astra CMS Configuration
  *
  * This file contains all site-level configuration:

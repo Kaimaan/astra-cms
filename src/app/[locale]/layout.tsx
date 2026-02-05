@@ -1,5 +1,14 @@
+/**
+ * ONBOARDING: This layout renders Header and Footer from site.json config.
+ *
+ * Customize Header/Footer in src/components/global/ or update content/site.json.
+ *
+ * Remove this comment when you start building.
+ */
+
 import { getHtmlLang, isValidLocale } from '@/lib/i18n/config';
 import { notFound } from 'next/navigation';
+import { Header, Footer } from '@/components/global';
 
 // Allow dynamic locale params (country-language combos like fi-en, de-en)
 export const dynamicParams = true;
@@ -19,10 +28,10 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <html lang={getHtmlLang(locale)}>
-      <body>
-        {/* TODO: Add Header global component */}
-        <main>{children}</main>
-        {/* TODO: Add Footer global component */}
+      <body className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
       </body>
     </html>
   );

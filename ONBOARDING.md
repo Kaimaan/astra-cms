@@ -1,208 +1,277 @@
-# Astra CMS - Migrate Your Existing Site
+# Astra CMS - AI Agent Onboarding
 
-This guide helps you migrate your existing website to Astra CMS using your AI coding assistant (Cursor, Claude Code, Codex, etc.).
-
-## Prerequisites
-
-- Your old site's public URL
-- Sitemap URL (optional but recommended - usually `/sitemap.xml`)
-- AI coding assistant (Cursor, Claude Code, Codex, etc.)
-- Asset library configured (for storing migrated media)
-
-## Step 1: Copy This Prompt Into Your AI Tool
-
-Copy the following prompt and paste it into your AI coding assistant. Replace the placeholder values with your actual site information.
+> **You are an AI agent helping a user build a website with Astra CMS.**
+> Read this document first when the user asks "what should I do?" or wants to explore the codebase.
 
 ---
 
+## What is Astra CMS?
+
+Astra CMS is a **block-based content management system** built with Next.js. It provides:
+
+- **Design tokens** - Centralized styling (colors, fonts, spacing)
+- **Block system** - Composable page sections with Zod schemas
+- **Content management** - JSON-based pages with revisions
+- **AI-first workflow** - Built to work with AI coding assistants
+
+**Key principle:** Astra provides core infrastructure. You (the AI agent) help the user build their design system, components, and blocks.
+
+---
+
+## First Step: Ask the User
+
+When the user first interacts with you, ask:
+
+> "Welcome to Astra CMS! Would you like to:
+> 1. **Build a new site from scratch** - I'll help you design your design system and create custom blocks
+> 2. **Migrate an existing website** - I'll help you scrape your current site and convert it to Astra
+>
+> Which would you prefer?"
+
+---
+
+## Path A: Build from Scratch
+
+If the user wants to build a new site:
+
+### Step 1: Understand Their Needs
+
+Ask the user:
+- What type of site? (business, portfolio, blog, SaaS, etc.)
+- Do they have brand guidelines? (colors, fonts, logo)
+- What pages do they need?
+- Any specific features or sections?
+
+### Step 2: Set Up Design System
+
+Update `astra.config.ts` with their brand:
+- Colors (primary, secondary, semantic)
+- Typography (fonts, sizes)
+- Spacing, radius, shadows
+
+**If the user doesn't have complete brand guidelines:** Fill in missing values with sensible defaults. Suggest complementary colors, standard font pairings, and modern spacing scales. Explain your choices so the user can adjust.
+
+**Ask for confirmation:** "Here's the design system based on your brand. Does this look right?"
+
+### Step 3: Create Components
+
+Based on their needs, create UI components in `src/components/ui/`:
+- Follow existing patterns (Button, Card, Input)
+- Use `cn()` for class merging
+- Use design tokens from config
+
+### Step 4: Create Blocks
+
+For each page section they need:
+- Create block in `src/blocks/[name]/`
+- Follow pattern in `src/blocks/hero/`
+- Define Zod schema for props
+
+### Step 5: Build Pages
+
+Create page content in `content/pages/`:
+- One JSON file per page
+- Compose blocks with props
+
+---
+
+## Path B: Migrate Existing Site
+
+If the user has an existing website to migrate:
+
+### Step 1: Get Site Information
+
+Ask the user:
+- **Site URL** - The website to migrate
+- **Sitemap URL** - Usually `[site]/sitemap.xml` (helps track all pages)
+- **Any pages to skip?** - Admin areas, login pages, etc.
+
+### Step 2: Set Up Scraping Tools
+
+Install Playwright for headless browser scraping:
+
+```bash
+npm install playwright --save-dev
+npx playwright install chromium
 ```
-I want to migrate my existing website to Astra CMS.
 
-Site URL: [YOUR_SITE_URL]
-Sitemap URL (optional): [YOUR_SITEMAP_URL or "none"]
+### Step 3: Create Migration Script
 
-Please:
+Create `scripts/migrate-site.ts` that:
 
-1. Install Playwright temporarily:
-   npm install playwright --save-dev
+1. **Fetches sitemap.xml** - Gets list of all pages
+2. **For each page, extracts:**
+   - CSS custom properties and computed styles → design tokens
+   - Content structure and patterns → block definitions
+   - Images and videos → asset downloads
+   - Meta tags → SEO config
 
-2. Create a migration script at scripts/migrate-site.ts that:
-   - Parses sitemap.xml if provided (for complete page list)
-   - Falls back to crawling from homepage if no sitemap
-   - Extracts CSS custom properties and computed styles for design tokens
-   - Identifies page sections (hero, features, content, CTAs, videos)
-   - Maps them to Astra block types
-   - Downloads images and self-hosted videos to the asset library
-   - Preserves YouTube/Vimeo embed URLs
+```typescript
+// scripts/migrate-site.ts
+import { chromium } from 'playwright';
 
-3. Run the script and generate:
-   - Updated astra.config.ts with my design tokens
-   - content/pages/*.json with block instances
-   - Media uploaded to asset library
+async function migrateSite(siteUrl: string, sitemapUrl?: string) {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
 
-4. Clean up after migration:
-   - Delete the scripts/ folder
-   - npm uninstall playwright
+  // 1. Get all URLs from sitemap or crawl
+  const urls = sitemapUrl
+    ? await parseSitemap(sitemapUrl)
+    : await crawlSite(page, siteUrl);
 
-Reference these Astra block types and their schemas:
+  // 2. Extract design tokens from CSS
+  const tokens = await extractDesignTokens(page, siteUrl);
 
-hero: {
-  title: string (required),
-  subtitle?: string,
-  description?: string,
-  alignment: 'left' | 'center' | 'right' (default: 'center'),
-  cta?: { label: string, href: string, variant: 'primary' | 'secondary' | 'outline' },
-  secondaryCta?: { label: string, href: string, variant: 'primary' | 'secondary' | 'outline' },
-  backgroundImage?: string (URL)
+  // 3. For each URL, extract content
+  for (const url of urls) {
+    await page.goto(url);
+    const content = await extractPageContent(page);
+    // Analyze content patterns, create blocks, etc.
+  }
+
+  await browser.close();
 }
+```
 
-features: {
-  title?: string,
-  subtitle?: string,
-  features: Array<{ icon: string, title: string, description: string }>,
-  columns: '2' | '3' | '4' (default: '3')
-}
+### Step 4: Extract Design System
 
-rich-text: {
-  content: string (HTML),
-  maxWidth: 'sm' | 'md' | 'lg' | 'xl' | 'full' (default: 'md')
-}
+From the site's CSS, extract:
 
-cta: {
-  title: string (required),
-  description?: string,
-  primaryCta: { label: string, href: string },
-  secondaryCta?: { label: string, href: string },
-  variant: 'default' | 'centered' | 'split' (default: 'default')
-}
+| Data | Source | Output |
+|------|--------|--------|
+| Colors | `--primary-color`, computed styles | `astra.config.ts` colors |
+| Fonts | `font-family` rules | `astra.config.ts` typography |
+| Spacing | padding, margin, gap patterns | `astra.config.ts` spacing |
+| Shadows | `box-shadow` values | `astra.config.ts` shadows |
+| Radius | `border-radius` values | `astra.config.ts` radius |
 
-video: {
-  src: string (required - asset URL or embed URL),
-  type: 'hosted' | 'embed' (default: 'hosted'),
-  poster?: string (thumbnail URL),
-  title?: string,
-  autoplay: boolean (default: false),
-  loop: boolean (default: false),
-  muted: boolean (default: false),
-  controls: boolean (default: true),
-  aspectRatio: '16:9' | '4:3' | '1:1' | '9:16' (default: '16:9')
-}
+**Ask the user:** "I extracted these design tokens from your site: [list colors, fonts]. Should I adjust any of them?"
 
-Block instance format:
+### Step 5: Analyze Content Patterns
+
+For each page, identify:
+- Hero sections (large headings, background images)
+- Feature grids (cards with icons)
+- Call-to-action sections
+- Text content blocks
+- Media (images, videos)
+- Navigation structure
+- Footer content
+
+**Don't assume specific blocks.** Create blocks based on what you actually find.
+
+**Ask the user:** "I found these content patterns: [list]. I'll create a block for each. Does this look right?"
+
+### Step 6: Create Blocks
+
+For each unique pattern:
+1. Create `src/blocks/[pattern-name]/index.ts` with Zod schema
+2. Create `src/blocks/[pattern-name]/renderer.tsx` component
+3. Export from `src/blocks/index.ts`
+
+### Step 7: Build Pages
+
+For each URL in the sitemap:
+1. Create `content/pages/page_[slug].json`
+2. Map extracted content to block instances
+3. Set SEO metadata from extracted meta tags
+
+### Step 8: Download Assets
+
+- Download images to `public/assets/` or `content/assets/`
+- Update image URLs in block props
+- For YouTube/Vimeo, preserve embed URLs
+
+### Step 9: Verify Migration
+
+Use sitemap as checklist:
+
+```typescript
+// scripts/verify-migration.ts
+// For each URL in sitemap:
+// - [ ] Page JSON exists
+// - [ ] All sections have corresponding blocks
+// - [ ] Images are downloaded
+// - [ ] SEO metadata is set
+```
+
+**Report to user:** "Migration complete. Created [X] pages covering [Y]% of your sitemap. [List any issues]"
+
+### Step 10: Cleanup
+
+```bash
+rm -rf scripts/
+npm uninstall playwright
+npm run dev  # Preview the migrated site
+```
+
+---
+
+## Reference: Key Files
+
+| File | Purpose |
+|------|---------|
+| `astra.config.ts` | Design tokens (colors, fonts, spacing) |
+| `src/components/ui/` | Reusable UI components |
+| `src/blocks/` | Block definitions (schema + renderer) |
+| `src/components/global/` | Header, Footer |
+| `content/pages/` | Page content (JSON) |
+| `content/site.json` | Site globals (header/footer config) |
+
+---
+
+## Reference: Block Structure
+
+Each block has two files:
+
+```
+src/blocks/[block-name]/
+├── index.ts      # Zod schema, defaultProps, metadata, registration
+└── renderer.tsx  # React component that renders the block
+```
+
+See `src/blocks/hero/` for a complete example.
+
+---
+
+## Reference: Page Format
+
+```json
 {
-  id: string (format: "block_<timestamp>_<random>"),
-  type: string (block type name),
-  version: 1,
-  props: { ... block-specific props }
-}
-
-Page format (content/pages/*.json):
-{
-  id: string,
-  schemaVersion: 1,
-  locale: "en-GB",
-  slug: string (URL path),
-  title: string,
-  status: "draft",
-  blocks: BlockInstance[],
-  createdAt: ISO date string,
-  updatedAt: ISO date string
+  "id": "page_home",
+  "schemaVersion": 1,
+  "locale": "en-GB",
+  "slug": "",
+  "title": "Home",
+  "status": "published",
+  "blocks": [
+    {
+      "id": "block_1234_abc",
+      "type": "hero",
+      "version": 1,
+      "props": { "title": "Welcome", "subtitle": "..." }
+    }
+  ],
+  "seo": {
+    "metaTitle": "Home | Site Name",
+    "metaDescription": "..."
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
 ---
 
-## What Gets Extracted
+## AI Agent Checklist
 
-### Design Tokens (astra.config.ts)
+Before finishing, confirm:
 
-The AI will extract from your site's CSS and fill in sensible defaults for anything missing:
-
-| Token Type | What's Extracted |
-|------------|------------------|
-| Colors | Primary, secondary, background, text colors from CSS custom properties or computed styles |
-| Typography | Font families and sizes |
-| Spacing | Common padding/margin values |
-| Radius | Border-radius values |
-| Shadows | Box-shadow values |
-
-### Content (Blocks)
-
-The AI identifies patterns and maps content to appropriate blocks:
-
-| Content Pattern | Block Type |
-|-----------------|------------|
-| Large heading at top, centered | `hero` |
-| Grid of cards with icons | `features` |
-| Prominent button sections | `cta` |
-| Video elements | `video` |
-| YouTube/Vimeo embeds | `video` (type: embed) |
-| Everything else | `rich-text` |
-
-### Media
-
-| Media Type | Handling |
-|------------|----------|
-| Images | Downloaded to asset library |
-| Self-hosted videos | Downloaded to asset library |
-| YouTube/Vimeo | Preserved as embed URLs |
-
-## Step 2: Review & Customize
-
-After the migration completes:
-
-1. **Review astra.config.ts** - Adjust design tokens to match your brand
-2. **Review content files** - Check block mappings are correct
-3. **Check media** - Verify all images/videos were captured
-4. **Run the dev server** - `npm run dev` to preview your migrated site
-
-## Troubleshooting
-
-### Sitemap not found
-If your site doesn't have a sitemap, the AI will crawl from your homepage. You can also manually provide a list of URLs to migrate.
-
-### Missing content
-Some dynamic content (loaded via JavaScript) may not be captured. Provide additional context to the AI about specific pages or sections.
-
-### Design tokens look wrong
-You can always manually adjust `astra.config.ts` after migration. The extracted values are a starting point.
-
-## Need Help?
-
-If you encounter issues during migration, describe the problem to your AI assistant with:
-- The error message (if any)
-- Which page/section failed
-- What you expected vs. what happened
-
----
-
-## Deployment
-
-Astra CMS uses **ISR (Incremental Static Regeneration)** for fast page loads and SEO.
-
-### How It Works
-
-1. **Build time**: All published pages are pre-rendered as static HTML
-2. **Runtime**: New pages work immediately (rendered on-demand, then cached)
-3. **Content updates**: When you publish in admin, pages are instantly revalidated
-
-### Recommended Hosts
-
-| Host | Setup |
-|------|-------|
-| **Vercel** | Zero config - ISR works automatically |
-| **Railway** | Works with Node.js runtime |
-| **Render** | Use Node.js web service |
-| **Self-hosted** | Run `npm run build && npm start` |
-
-### Content Update Flow
-
-```
-Editor publishes page in admin
-         ↓
-Server action revalidates the page
-         ↓
-Next visitor sees updated content
-```
-
-No additional configuration required - revalidation happens automatically when you publish content.
+- [ ] Asked user which path (new site or migration)
+- [ ] Design system configured in `astra.config.ts`
+- [ ] Required UI components created
+- [ ] Blocks created for all content patterns
+- [ ] Pages created (all sitemap URLs for migration)
+- [ ] Assets downloaded/configured
+- [ ] `npm run dev` works without errors
+- [ ] User has previewed and approved the site
