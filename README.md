@@ -11,7 +11,7 @@ AI-first, block-based content management system built with Next.js.
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20 or later
-- A Firebase project (for auth/storage) — optional for local-only development
+- A cloud platform account (e.g. Firebase, Supabase, AWS) — optional for local-only development
 
 ### 1. Clone the repository
 
@@ -33,6 +33,14 @@ cp .env.example .env.local
 ```
 
 Edit `.env.local` and fill in your values. See `.env.example` for details on each variable.
+
+To enable AI features (inline editing, AI assistant), add your Gemini API key:
+
+```
+GEMINI_API_KEY=your_key_here
+```
+
+Get a key at [Google AI Studio](https://aistudio.google.com/apikey). Note that Gemini API usage may incur charges — check [Google's pricing](https://ai.google.dev/pricing) for details.
 
 ### 4. Run the dev server
 
