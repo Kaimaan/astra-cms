@@ -92,6 +92,8 @@ Create page content in `content/pages/`:
 
 If the user has an existing website to migrate:
 
+> **Goal: Reproduce the original site as closely as possible.** Do NOT add your own improvements, redesigns, or "better" layouts during migration. Match the original first. The user can iterate and improve later.
+
 > **IMPORTANT: Do NOT start writing code until you complete the Extraction Phase.**
 > The extraction phase uses Playwright to scrape the actual site and collect real data (computed styles, content, assets). All code you write in the Build Phase must be based on this extracted data, not guesses.
 
