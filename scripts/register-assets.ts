@@ -1,9 +1,9 @@
 /**
  * Register Assets Script
  *
- * Scans public/uploads/ and public/assets/ for files not registered in
- * content/assets/assets.json and registers them. Files in public/assets/
- * are moved to public/uploads/ (the canonical location).
+ * Recursively scans public/uploads/ and public/assets/ (including subdirectories)
+ * for files not registered in content/assets/assets.json and registers them.
+ * Files in public/assets/ are moved to public/uploads/ (the canonical location).
  *
  * Run: npx tsx scripts/register-assets.ts
  *      npx tsx scripts/register-assets.ts --dry-run
@@ -92,10 +92,21 @@ async function dirExists(dir: string): Promise<boolean> {
   }
 }
 
-async function listFiles(dir: string): Promise<string[]> {
+async function listFilesRecursive(dir: string, baseDir?: string): Promise<string[]> {
   if (!(await dirExists(dir))) return [];
+  const base = baseDir || dir;
   const entries = await fs.readdir(dir, { withFileTypes: true });
-  return entries.filter((e) => e.isFile()).map((e) => e.name);
+  const files: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listFilesRecursive(fullPath, base)));
+    } else if (entry.isFile()) {
+      // Return path relative to base dir (e.g. "subdir/image.jpg")
+      files.push(path.relative(base, fullPath));
+    }
+  }
+  return files;
 }
 
 async function readAssetsJson(): Promise<Asset[]> {
@@ -118,15 +129,17 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-async function resolveFilenameCollision(filename: string): Promise<string> {
-  const ext = path.extname(filename);
-  const base = path.basename(filename, ext);
-  let candidate = filename;
+async function resolveFilenameCollision(relPath: string): Promise<string> {
+  const ext = path.extname(relPath);
+  const dir = path.dirname(relPath);
+  const base = path.basename(relPath, ext);
+  let candidate = relPath;
   let counter = 1;
   while (true) {
     try {
       await fs.access(path.join(UPLOADS_DIR, candidate));
-      candidate = `${base}-${Date.now()}-${counter}${ext}`;
+      const newName = `${base}-${Date.now()}-${counter}${ext}`;
+      candidate = dir === '.' ? newName : path.join(dir, newName);
       counter++;
     } catch {
       return candidate;
@@ -154,27 +167,30 @@ async function main() {
   let sharpWarned = false;
 
   for (const source of sources) {
-    const files = await listFiles(source.dir);
+    const relPaths = await listFilesRecursive(source.dir);
 
-    for (const filename of files) {
-      const ext = path.extname(filename).toLowerCase();
+    for (const relPath of relPaths) {
+      const ext = path.extname(relPath).toLowerCase();
       const mimeType = EXTENSION_TO_MIME[ext];
 
       if (!mimeType) {
-        result.skipped.push({ filename, reason: `unsupported extension (${ext})` });
+        result.skipped.push({ filename: relPath, reason: `unsupported extension (${ext})` });
         continue;
       }
+
+      // Use forward slashes for URLs
+      const urlPath = relPath.split(path.sep).join('/');
 
       // Check if already registered under either path
-      const uploadsUrl = `/uploads/${filename}`;
-      const assetsUrl = `/assets/${filename}`;
+      const uploadsUrl = `/uploads/${urlPath}`;
+      const assetsUrl = `/assets/${urlPath}`;
       if (registeredUrls.has(uploadsUrl) || registeredUrls.has(assetsUrl)) {
-        result.skipped.push({ filename, reason: 'already registered' });
+        result.skipped.push({ filename: relPath, reason: 'already registered' });
         continue;
       }
 
-      const sourceFilePath = path.join(source.dir, filename);
-      let targetFilename = filename;
+      const sourceFilePath = path.join(source.dir, relPath);
+      let targetRelPath = relPath;
       let targetUrl = uploadsUrl;
 
       // Move from public/assets/ to public/uploads/
@@ -182,28 +198,28 @@ async function main() {
         try {
           // Check collision with existing file in uploads
           try {
-            await fs.access(path.join(UPLOADS_DIR, filename));
+            await fs.access(path.join(UPLOADS_DIR, relPath));
             // File exists in uploads — resolve collision
-            targetFilename = await resolveFilenameCollision(filename);
-            targetUrl = `/uploads/${targetFilename}`;
+            targetRelPath = await resolveFilenameCollision(relPath);
+            targetUrl = `/uploads/${targetRelPath.split(path.sep).join('/')}`;
           } catch {
             // No collision
           }
 
           if (!dryRun) {
-            await fs.mkdir(UPLOADS_DIR, { recursive: true });
-            await fs.rename(sourceFilePath, path.join(UPLOADS_DIR, targetFilename));
+            await fs.mkdir(path.dirname(path.join(UPLOADS_DIR, targetRelPath)), { recursive: true });
+            await fs.rename(sourceFilePath, path.join(UPLOADS_DIR, targetRelPath));
           }
-          result.moved.push({ from: `public/assets/${filename}`, to: `public/uploads/${targetFilename}` });
+          result.moved.push({ from: `public/assets/${relPath}`, to: `public/uploads/${targetRelPath}` });
         } catch (err) {
-          result.errors.push({ filename, error: `failed to move: ${err}` });
+          result.errors.push({ filename: relPath, error: `failed to move: ${err}` });
           continue;
         }
       }
 
       // Get file stats
       const filePath = source.needsMove && !dryRun
-        ? path.join(UPLOADS_DIR, targetFilename)
+        ? path.join(UPLOADS_DIR, targetRelPath)
         : sourceFilePath;
 
       try {
@@ -220,6 +236,7 @@ async function main() {
           }
         }
 
+        const targetFilename = path.basename(targetRelPath);
         const asset: Asset = {
           id: generateId('asset'),
           type: assetType,
@@ -233,9 +250,9 @@ async function main() {
 
         newAssets.push(asset);
         registeredUrls.add(targetUrl);
-        result.registered.push({ filename: targetFilename, from: source.dir, url: targetUrl });
+        result.registered.push({ filename: targetRelPath, from: source.dir, url: targetUrl });
       } catch (err) {
-        result.errors.push({ filename, error: `failed to read: ${err}` });
+        result.errors.push({ filename: relPath, error: `failed to read: ${err}` });
       }
     }
   }
