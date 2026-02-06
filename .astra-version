@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "upstream": "https://github.com/Kaimaan/astra-cms",
+  "schemaVersions": {
+    "page": 2,
+    "post": 1,
+    "site": 1
+  }
+}

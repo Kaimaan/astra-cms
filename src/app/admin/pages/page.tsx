@@ -9,6 +9,7 @@ export default async function PagesListPage() {
     id: page.id,
     title: page.title,
     paths: page.paths,
+    locale: page.locale,
     status: page.status,
     updatedAt: page.updatedAt.toISOString(),
   }));

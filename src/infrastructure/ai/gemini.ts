@@ -20,7 +20,7 @@ import type {
 } from '@/core/ai/types';
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-export const GEMINI_MODEL = 'gemini-1.5-flash'; // Fast and cost-effective
+export const GEMINI_MODEL = 'gemini-3-flash-preview'; // Fast and cost-effective
 
 function getApiKey(): string | undefined {
   return process.env.GEMINI_API_KEY;

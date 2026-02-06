@@ -4,7 +4,7 @@ import { calculateCost } from '@/core/ai/pricing';
 import type { AIUsageRecord } from '@/core/ai/types';
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MODEL = 'gemini-1.5-flash';
+const MODEL = 'gemini-3-flash-preview';
 
 interface EditBlockRequest {
   blockType: string;

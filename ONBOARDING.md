@@ -16,6 +16,8 @@ Astra CMS is a **block-based content management system** built with Next.js. It 
 
 **Key principle:** Astra provides core infrastructure. You (the AI agent) help the user build their design system, components, and blocks.
 
+> **CRITICAL: Never delete onboarding files, migration scripts, or any scaffolding until the user has explicitly confirmed the site is complete and working.** This includes `ONBOARDING.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, and `scripts/`. Premature cleanup removes your instructions and prevents the user from fixing issues. Always wait for explicit user approval.
+
 ---
 
 ## First Step: Ask the User
@@ -319,13 +321,66 @@ After each phase, verify:
 
 **Report to user:** "Phase [N] complete. Created [X] pages. [List any issues]. Ready to proceed to Phase [N+1]?"
 
-#### Step 12: Cleanup (after final phase)
+#### Step 12: User Review & Testing
+
+> **MANDATORY: Do NOT skip this step. Do NOT proceed to cleanup until the user explicitly confirms they are satisfied.**
+
+Start the dev server and have the user test the site:
+
+```bash
+npm run dev  # Start the dev server for preview
+```
+
+Walk through this checklist **with the user** (ask them to verify each item):
+
+- [ ] All pages load correctly
+- [ ] Navigation works (header links, dropdowns, mobile menu)
+- [ ] Images and assets display properly
+- [ ] Layout matches the original site
+- [ ] Text content is accurate
+- [ ] SEO metadata is set
+- [ ] Admin panel works (can view/edit pages)
+
+**Ask the user:**
+
+> "The site is ready for review. Please check all the pages and let me know:
+> 1. Does everything look correct?
+> 2. Is anything broken or missing?
+> 3. Are you happy with the result?
+>
+> Take your time — I won't clean up any files until you confirm everything is good."
+
+**If the user reports issues:** Fix them and repeat this step. Do not proceed until the user explicitly says they are satisfied.
+
+#### Step 13: Cleanup (only after explicit user approval)
+
+> **NEVER run this step automatically.** Only proceed when the user has explicitly confirmed in Step 12 that they are satisfied with the site. If in doubt, ask again.
+
+**Ask the user before proceeding:**
+
+> "Everything looks good! I'm ready to clean up the migration scripts and onboarding files. This will remove:
+> - `scripts/` (migration scripts)
+> - Playwright dependency
+> - `ONBOARDING.md`, `CLAUDE.md`, and other agent instruction files
+>
+> These are only needed during setup — your site will work fine without them. Should I go ahead?"
+
+Only after the user confirms:
 
 ```bash
 rm -rf scripts/
 npm uninstall playwright
-npm run dev  # Preview the migrated site
 ```
+
+Then remove onboarding files:
+- `ONBOARDING.md`
+- `CLAUDE.md`
+- `.cursorrules`
+- `.windsurfrules`
+- `.clinerules`
+- `.github/copilot-instructions.md`
+
+And update `page_home.json` to replace the getting-started content with the user's actual homepage.
 
 ---
 
@@ -398,5 +453,11 @@ Before finishing, confirm:
 - [ ] Pages created (all sitemap URLs for migration)
 - [ ] Assets downloaded/configured
 - [ ] `npm run dev` works without errors
-- [ ] User has previewed and approved the site
-- [ ] Cleaned up onboarding files: remove `ONBOARDING.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, and update `page_home.json` to replace the getting-started content with the user's actual homepage
+- [ ] User has previewed and tested all pages
+- [ ] User has explicitly confirmed they are satisfied with the site
+
+> **STOP — Do not continue past this point until the user has explicitly confirmed the site is complete and working. Never assume approval. Ask and wait for a clear "yes".**
+
+- [ ] User has approved cleanup of onboarding files
+- [ ] Cleaned up: removed migration scripts, playwright, onboarding files (`ONBOARDING.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`)
+- [ ] Updated `page_home.json` to replace getting-started content with user's actual homepage

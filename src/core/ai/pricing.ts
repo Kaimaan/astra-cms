@@ -17,6 +17,7 @@ export interface ProviderPricing {
 // Pricing data (as of early 2024)
 export const AI_PRICING: Record<string, ProviderPricing> = {
   gemini: {
+    'gemini-3-flash-preview': { input: 0.10, output: 0.40 },
     'gemini-1.5-flash': { input: 0.075, output: 0.30 },
     'gemini-1.5-pro': { input: 1.25, output: 5.00 },
     'gemini-2.0-flash': { input: 0.10, output: 0.40 },
@@ -30,7 +31,7 @@ export const AI_PRICING: Record<string, ProviderPricing> = {
 
 // Default models used by each provider
 export const DEFAULT_MODELS: Record<string, string> = {
-  gemini: 'gemini-1.5-flash',
+  gemini: 'gemini-3-flash-preview',
   anthropic: 'claude-3-haiku-20240307',
 };
 

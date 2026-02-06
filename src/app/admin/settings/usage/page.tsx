@@ -109,7 +109,7 @@ function TokenCalculator() {
             onChange={(e) => setProvider(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
           >
-            <option value="gemini">Gemini (gemini-1.5-flash)</option>
+            <option value="gemini">Gemini (gemini-3-flash-preview)</option>
             <option value="anthropic">Anthropic (claude-3-haiku)</option>
           </select>
         </div>
@@ -180,7 +180,7 @@ function CostCalculator() {
             onChange={(e) => setProvider(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
           >
-            <option value="gemini">Gemini (gemini-1.5-flash)</option>
+            <option value="gemini">Gemini (gemini-3-flash-preview)</option>
             <option value="anthropic">Anthropic (claude-3-haiku)</option>
           </select>
         </div>
