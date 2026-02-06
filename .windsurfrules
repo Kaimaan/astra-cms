@@ -10,17 +10,17 @@ Key files:
 - `src/blocks/` - Block definitions (schema + renderer)
 - `content/pages/` - Page content (JSON)
 - `content/site.json` - Site-wide config (header, footer, navigation)
-- `.astra-version` - Current version and upstream repo URL
-- `UPDATES.md` - Changelog of framework updates
+- `.astra-version` - Tracks upstream commit SHA and repo URL
+- `UPDATES.md` - File ownership guide for updates
 
 ## Checking for Updates
 
 When the user asks to check for or apply Astra CMS updates:
-1. Read `.astra-version` for the current version and upstream URL
-2. Fetch `UPDATES.md` from the upstream repo's main branch (use the `upstream` URL from `.astra-version`)
-3. Compare versions — report what's available with summaries and risk levels
-4. If user wants to apply: fetch the changed files from the upstream repo at the target version tag
+1. Read `.astra-version` for the current commit SHA and upstream URL
+2. Compare against upstream main: `gh api repos/Kaimaan/astra-cms/compare/<commit>...main`
+3. Review the commits and changed files — summarize what's new
+4. If user wants to apply: fetch changed files from upstream and apply them
 5. For framework files: compare and apply changes, preserving any local modifications
-6. For user-customized files (content/, astra.config.ts, user blocks): never overwrite — describe what the user needs to add manually
-7. Update `.astra-version` after successful update
+6. For user-customized files (see UPDATES.md for list): never overwrite — describe what the user needs to add manually
+7. Update the commit SHA in `.astra-version` to the latest upstream main commit
 8. Run `npm run build` to verify

@@ -1,12 +1,10 @@
-# Astra CMS Updates
+# Astra CMS — Update Guide
 
-This file tracks changes to the Astra CMS framework.
-If you're running a customized copy, your AI agent can compare your
-`.astra-version` against this log to see what's new.
+This project tracks the upstream Astra CMS via the commit SHA in `.astra-version`.
+Your AI agent can compare your stored commit against the upstream main branch
+to see what's changed and apply updates.
 
-To apply updates: ask your AI agent to check for Astra CMS updates.
-It will read your current version, review this changelog, and fetch
-the relevant changes from the upstream GitHub repo.
+To check for updates: ask your AI agent "check for Astra CMS updates".
 
 ## File Ownership
 
@@ -15,9 +13,3 @@ Files AI agents should NOT overwrite during updates (user-customized):
 - `content/` — all page/post content
 - `content/site.json` — header, footer, navigation
 - `src/blocks/` — user-created blocks (template blocks may be updated carefully)
-
----
-
-## 0.1.0 (2026-02-06)
-
-Initial release — baseline version.
