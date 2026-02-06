@@ -306,6 +306,12 @@ Save files and register them so they appear in the admin media library:
 3. Reference assets in block props as `/uploads/{filename}`
 4. For YouTube/Vimeo, preserve embed URLs (no download needed)
 
+> **Recovery:** If assets were downloaded but not registered in `assets.json`, run:
+> ```bash
+> npm run register-assets
+> ```
+> This scans `public/uploads/` and `public/assets/` for unregistered files and adds them to the asset registry. Use `npm run register-assets:dry` to preview without making changes.
+
 #### Step 11: Verify Phase
 
 After each phase, verify:
@@ -315,7 +321,7 @@ After each phase, verify:
 // For each URL in current phase:
 // - [ ] Page JSON exists
 // - [ ] All sections have corresponding blocks
-// - [ ] Images are downloaded
+// - [ ] Images are downloaded and registered (run `npm run register-assets:dry` to check)
 // - [ ] SEO metadata is set
 ```
 
@@ -371,6 +377,8 @@ Only after the user confirms:
 rm -rf scripts/
 npm uninstall playwright
 ```
+
+Also remove the `register-assets` and `register-assets:dry` scripts from `package.json`.
 
 Then remove onboarding files:
 - `ONBOARDING.md`

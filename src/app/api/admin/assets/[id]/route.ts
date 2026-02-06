@@ -60,10 +60,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
     }
 
-    // Delete file from disk if it's in uploads
-    if (asset.url.startsWith('/uploads/')) {
-      const filename = asset.url.replace('/uploads/', '');
-      const filePath = path.join(UPLOADS_DIR, filename);
+    // Delete file from disk
+    if (asset.url.startsWith('/uploads/') || asset.url.startsWith('/assets/')) {
+      const filePath = path.join(process.cwd(), 'public', asset.url);
       try {
         await unlink(filePath);
       } catch {

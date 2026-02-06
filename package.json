@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "register-assets": "npx tsx scripts/register-assets.ts",
+    "register-assets:dry": "npx tsx scripts/register-assets.ts --dry-run"
   },
   "dependencies": {
     "next": "^15.1.0",
