@@ -66,15 +66,18 @@ function EditModeLayout() {
   }, [isDirty]);
 
   const handleExitEditMode = useCallback(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('edit');
-    window.location.href = url.toString();
+    // Go back to where the user came from (usually admin pages list)
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/admin/pages';
+    }
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="fixed inset-0 z-[100] bg-gray-100 flex flex-col">
       {/* Toolbar */}
-      <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-50">
+      <div className="h-14 bg-white border-b border-gray-200 flex-shrink-0">
         <div className="h-full px-4 flex items-center justify-between">
           {/* Left side */}
           <div className="flex items-center gap-4">
@@ -128,16 +131,16 @@ function EditModeLayout() {
       </div>
 
       {/* Main content */}
-      <div className="pt-14">
-        {/* Page preview - add right margin for fixed chat panel */}
-        <div className="mr-80 min-h-[calc(100vh-3.5rem)]">
+      <div className="flex-1 flex min-h-0">
+        {/* Page preview */}
+        <div className="flex-1 overflow-y-auto">
           <div className="bg-white min-h-full">
             <EditablePageContent />
           </div>
         </div>
 
-        {/* Chat panel - fixed position to prevent layout shifts */}
-        <div className="fixed right-0 top-14 bottom-0 w-80">
+        {/* Chat panel */}
+        <div className="w-80 flex-shrink-0">
           <ChatPanel />
         </div>
       </div>

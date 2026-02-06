@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUsageProvider } from '@/core/ai/usage-provider';
 import { calculateCost } from '@/core/ai/pricing';
 import type { AIUsageRecord } from '@/core/ai/types';
+import '@/blocks';
+import { getBlockDefinition } from '@/core/blocks/registry';
+import { getEditableFields, schemaToDescription } from '@/lib/schema/schema-to-fields';
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL = 'gemini-3-flash-preview';
 
 interface EditBlockRequest {
   blockType: string;
-  blockLabel: string;
-  schemaDescription: string;
+  blockLabel?: string;
+  schemaDescription?: string;
   currentProps: Record<string, unknown>;
   userRequest: string;
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
@@ -89,7 +92,7 @@ async function callGemini(
       },
       contents,
       generationConfig: {
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
         temperature: 0.7,
       },
     }),
@@ -136,12 +139,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<EditBlock
       conversationHistory = [],
     } = body;
 
+    // Resolve block metadata from registry if not provided
+    let resolvedLabel = blockLabel || blockType;
+    let resolvedDescription = schemaDescription || '';
+    if (!blockLabel || !schemaDescription) {
+      const definition = getBlockDefinition(blockType);
+      if (definition) {
+        resolvedLabel = blockLabel || definition.label;
+        if (!schemaDescription) {
+          const fields = getEditableFields(definition.schema);
+          resolvedDescription = schemaToDescription(fields);
+        }
+      }
+    }
+
     const systemPrompt = `You are an AI assistant helping users edit content blocks in a CMS.
 
-You are editing a "${blockLabel}" block (type: ${blockType}).
+You are editing a "${resolvedLabel}" block (type: ${blockType}).
 
 The block has the following editable properties:
-${schemaDescription}
+${resolvedDescription}
 
 Current values:
 ${JSON.stringify(currentProps, null, 2)}
