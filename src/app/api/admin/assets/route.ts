@@ -5,10 +5,15 @@ import { getContentProvider } from '@/infrastructure';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
-// Ensure uploads directory exists
-async function ensureUploadsDir() {
+function getTypeSubdir(mimeType: string): string {
+  if (mimeType.startsWith('image/')) return 'images';
+  if (mimeType.startsWith('video/')) return 'videos';
+  return 'documents';
+}
+
+async function ensureDir(dir: string) {
   try {
-    await mkdir(UPLOADS_DIR, { recursive: true });
+    await mkdir(dir, { recursive: true });
   } catch {
     // Directory exists
   }
@@ -29,8 +34,6 @@ export async function GET() {
 // POST /api/admin/assets - Upload new asset
 export async function POST(request: NextRequest) {
   try {
-    await ensureUploadsDir();
-
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -38,21 +41,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // Determine type subdirectory
+    const typeDir = getTypeSubdir(file.type);
+    const targetDir = path.join(UPLOADS_DIR, typeDir);
+    await ensureDir(targetDir);
+
     // Generate unique filename
     const timestamp = Date.now();
     const ext = path.extname(file.name);
     const baseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9]/g, '-');
     const filename = `${baseName}-${timestamp}${ext}`;
 
-    // Save file to public/uploads
+    // Save file to public/uploads/{type}/
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filePath = path.join(UPLOADS_DIR, filename);
+    const filePath = path.join(targetDir, filename);
     await writeFile(filePath, buffer);
-
-    // Get image dimensions if it's an image
-    let width: number | undefined;
-    let height: number | undefined;
 
     // Register asset in content provider
     const provider = getContentProvider();
@@ -63,10 +67,8 @@ export async function POST(request: NextRequest) {
 
     // Update with correct URL
     const updatedAsset = await provider.updateAsset(asset.id, {
-      url: `/uploads/${filename}`,
+      url: `/uploads/${typeDir}/${filename}`,
       size: buffer.length,
-      width,
-      height,
     });
 
     return NextResponse.json(updatedAsset);

@@ -290,27 +290,35 @@ Use the detected locale (from Step 3) in `locale` and `paths` — not the defaul
 
 Save files and register them so they appear in the admin media library:
 
-1. Download images/videos to `/public/uploads/` with naming format `{name}-{timestamp}{ext}`
+Assets are organized by type in subdirectories:
+```
+public/uploads/
+  images/    — .jpg, .jpeg, .png, .gif, .webp, .avif, .svg, .ico
+  videos/    — .mp4, .webm, .mov, .avi
+  documents/ — .pdf, .doc, .docx
+```
+
+1. Download images to `/public/uploads/images/`, videos to `/public/uploads/videos/`, documents to `/public/uploads/documents/` with naming format `{name}-{timestamp}{ext}`
 2. Register each asset in `/content/assets/assets.json` with this structure:
    ```json
    {
      "id": "asset_{timestamp}_{random}",
      "type": "image",
      "filename": "hero-bg-1706000000000.jpg",
-     "url": "/uploads/hero-bg-1706000000000.jpg",
+     "url": "/uploads/images/hero-bg-1706000000000.jpg",
      "mimeType": "image/jpeg",
      "size": 123456,
      "createdAt": "2024-01-01T00:00:00.000Z"
    }
    ```
-3. Reference assets in block props as `/uploads/{filename}`
+3. Reference assets in block props as `/uploads/images/{filename}` (or `/uploads/videos/`, `/uploads/documents/`)
 4. For YouTube/Vimeo, preserve embed URLs (no download needed)
 
-> **Recovery:** If assets were downloaded but not registered in `assets.json`, run:
+> **Recovery:** If assets were downloaded but not registered or organized, run:
 > ```bash
 > npm run register-assets
 > ```
-> This scans `public/uploads/` and `public/assets/` for unregistered files and adds them to the asset registry. Use `npm run register-assets:dry` to preview without making changes.
+> This scans `public/uploads/` and `public/assets/` for unregistered files, moves them into the correct type subdirectory, and adds them to the asset registry. Use `npm run register-assets:dry` to preview without making changes.
 
 #### Step 11: Verify Phase
 

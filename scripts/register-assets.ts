@@ -1,9 +1,14 @@
 /**
  * Register Assets Script
  *
- * Recursively scans public/uploads/ and public/assets/ (including subdirectories)
- * for files not registered in content/assets/assets.json and registers them.
- * Files in public/assets/ are moved to public/uploads/ (the canonical location).
+ * Recursively scans public/uploads/ and public/assets/ for files not registered
+ * in content/assets/assets.json. All files are organized into type-based subdirs:
+ *   public/uploads/images/   — image files
+ *   public/uploads/videos/   — video files
+ *   public/uploads/documents/ — documents
+ *
+ * Files from public/assets/ or the root of public/uploads/ are moved into the
+ * correct type subdir and registered.
  *
  * Run: npx tsx scripts/register-assets.ts
  *      npx tsx scripts/register-assets.ts --dry-run
@@ -38,9 +43,17 @@ const EXTENSION_TO_MIME: Record<string, string> = {
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 };
 
+type AssetType = 'image' | 'video' | 'document';
+
+const TYPE_DIRS: Record<AssetType, string> = {
+  image: 'images',
+  video: 'videos',
+  document: 'documents',
+};
+
 interface Asset {
   id: string;
-  type: 'image' | 'video' | 'document';
+  type: AssetType;
   filename: string;
   url: string;
   mimeType: string;
@@ -64,7 +77,7 @@ const UPLOADS_DIR = path.join(ROOT, 'public', 'uploads');
 const ASSETS_PUBLIC_DIR = path.join(ROOT, 'public', 'assets');
 const ASSETS_JSON = path.join(ROOT, 'content', 'assets', 'assets.json');
 
-function getAssetType(mimeType: string): 'image' | 'video' | 'document' {
+function getAssetType(mimeType: string): AssetType {
   if (mimeType.startsWith('image/')) return 'image';
   if (mimeType.startsWith('video/')) return 'video';
   return 'document';
@@ -102,7 +115,6 @@ async function listFilesRecursive(dir: string, baseDir?: string): Promise<string
     if (entry.isDirectory()) {
       files.push(...(await listFilesRecursive(fullPath, base)));
     } else if (entry.isFile()) {
-      // Return path relative to base dir (e.g. "subdir/image.jpg")
       files.push(path.relative(base, fullPath));
     }
   }
@@ -123,28 +135,26 @@ async function writeAssetsJson(assets: Asset[]): Promise<void> {
   await fs.writeFile(ASSETS_JSON, JSON.stringify(assets, null, 2), 'utf-8');
 }
 
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-async function resolveFilenameCollision(relPath: string): Promise<string> {
-  const ext = path.extname(relPath);
-  const dir = path.dirname(relPath);
-  const base = path.basename(relPath, ext);
-  let candidate = relPath;
+async function resolveCollision(targetDir: string, filename: string): Promise<string> {
+  const ext = path.extname(filename);
+  const base = path.basename(filename, ext);
+  let candidate = filename;
   let counter = 1;
   while (true) {
     try {
-      await fs.access(path.join(UPLOADS_DIR, candidate));
-      const newName = `${base}-${Date.now()}-${counter}${ext}`;
-      candidate = dir === '.' ? newName : path.join(dir, newName);
+      await fs.access(path.join(targetDir, candidate));
+      candidate = `${base}-${Date.now()}-${counter}${ext}`;
       counter++;
     } catch {
       return candidate;
     }
   }
+}
+
+function isInCorrectTypeDir(relPath: string, assetType: AssetType): boolean {
+  const typeDir = TYPE_DIRS[assetType];
+  const parts = relPath.split(path.sep);
+  return parts[0] === typeDir;
 }
 
 async function main() {
@@ -158,85 +168,98 @@ async function main() {
   const result: ScanResult = { registered: [], moved: [], skipped: [], errors: [] };
   const newAssets: Asset[] = [];
 
-  // Collect files from both directories
-  const sources: { dir: string; urlPrefix: string; needsMove: boolean }[] = [
-    { dir: UPLOADS_DIR, urlPrefix: '/uploads/', needsMove: false },
-    { dir: ASSETS_PUBLIC_DIR, urlPrefix: '/assets/', needsMove: true },
+  // Scan both directories
+  const scanDirs = [
+    { dir: UPLOADS_DIR, label: 'public/uploads' },
+    { dir: ASSETS_PUBLIC_DIR, label: 'public/assets' },
   ];
 
   let sharpWarned = false;
 
-  for (const source of sources) {
+  for (const source of scanDirs) {
     const relPaths = await listFilesRecursive(source.dir);
 
     for (const relPath of relPaths) {
       const ext = path.extname(relPath).toLowerCase();
       const mimeType = EXTENSION_TO_MIME[ext];
+      const filename = path.basename(relPath);
 
       if (!mimeType) {
         result.skipped.push({ filename: relPath, reason: `unsupported extension (${ext})` });
         continue;
       }
 
-      // Use forward slashes for URLs
-      const urlPath = relPath.split(path.sep).join('/');
+      const assetType = getAssetType(mimeType);
+      const typeDir = TYPE_DIRS[assetType];
+      const sourceFilePath = path.join(source.dir, relPath);
 
-      // Check if already registered under either path
-      const uploadsUrl = `/uploads/${urlPath}`;
-      const assetsUrl = `/assets/${urlPath}`;
-      if (registeredUrls.has(uploadsUrl) || registeredUrls.has(assetsUrl)) {
+      // Target: always /uploads/{type}/{filename}
+      const targetDir = path.join(UPLOADS_DIR, typeDir);
+      let targetFilename = filename;
+
+      // Check if already registered under any known URL pattern
+      const canonicalUrl = `/uploads/${typeDir}/${filename}`;
+      const legacyUrls = [
+        `/uploads/${relPath.split(path.sep).join('/')}`,
+        `/assets/${relPath.split(path.sep).join('/')}`,
+        `/uploads/${filename}`,
+      ];
+      const allUrls = [canonicalUrl, ...legacyUrls];
+      if (allUrls.some((url) => registeredUrls.has(url))) {
         result.skipped.push({ filename: relPath, reason: 'already registered' });
         continue;
       }
 
-      const sourceFilePath = path.join(source.dir, relPath);
-      let targetRelPath = relPath;
-      let targetUrl = uploadsUrl;
+      // Check if file is already in the correct location
+      const alreadyInPlace =
+        source.dir === UPLOADS_DIR && isInCorrectTypeDir(relPath, assetType);
 
-      // Move from public/assets/ to public/uploads/
-      if (source.needsMove) {
+      // Determine if we need to move the file
+      const needsMove = !alreadyInPlace;
+
+      if (needsMove) {
         try {
-          // Check collision with existing file in uploads
+          // Resolve collision in target dir
           try {
-            await fs.access(path.join(UPLOADS_DIR, relPath));
-            // File exists in uploads — resolve collision
-            targetRelPath = await resolveFilenameCollision(relPath);
-            targetUrl = `/uploads/${targetRelPath.split(path.sep).join('/')}`;
+            await fs.access(path.join(targetDir, filename));
+            targetFilename = await resolveCollision(targetDir, filename);
           } catch {
             // No collision
           }
 
           if (!dryRun) {
-            await fs.mkdir(path.dirname(path.join(UPLOADS_DIR, targetRelPath)), { recursive: true });
-            await fs.rename(sourceFilePath, path.join(UPLOADS_DIR, targetRelPath));
+            await fs.mkdir(targetDir, { recursive: true });
+            await fs.rename(sourceFilePath, path.join(targetDir, targetFilename));
           }
-          result.moved.push({ from: `public/assets/${relPath}`, to: `public/uploads/${targetRelPath}` });
+          result.moved.push({
+            from: `${source.label}/${relPath}`,
+            to: `public/uploads/${typeDir}/${targetFilename}`,
+          });
         } catch (err) {
           result.errors.push({ filename: relPath, error: `failed to move: ${err}` });
           continue;
         }
       }
 
-      // Get file stats
-      const filePath = source.needsMove && !dryRun
-        ? path.join(UPLOADS_DIR, targetRelPath)
+      // Get file stats from final location
+      const statPath = needsMove && !dryRun
+        ? path.join(targetDir, targetFilename)
         : sourceFilePath;
 
       try {
-        const stat = await fs.stat(filePath);
-        const assetType = getAssetType(mimeType);
+        const stat = await fs.stat(statPath);
 
         // Get image dimensions (skip SVGs — unreliable via sharp)
         let dimensions: { width: number; height: number } | null = null;
         if (assetType === 'image' && ext !== '.svg') {
-          dimensions = await getImageDimensions(filePath);
+          dimensions = await getImageDimensions(statPath);
           if (!dimensions && !sharpWarned) {
             console.log('  Note: sharp not available, skipping image dimensions\n');
             sharpWarned = true;
           }
         }
 
-        const targetFilename = path.basename(targetRelPath);
+        const targetUrl = `/uploads/${typeDir}/${targetFilename}`;
         const asset: Asset = {
           id: generateId('asset'),
           type: assetType,
@@ -250,7 +273,7 @@ async function main() {
 
         newAssets.push(asset);
         registeredUrls.add(targetUrl);
-        result.registered.push({ filename: targetRelPath, from: source.dir, url: targetUrl });
+        result.registered.push({ filename: targetFilename, from: source.label, url: targetUrl });
       } catch (err) {
         result.errors.push({ filename: relPath, error: `failed to read: ${err}` });
       }
