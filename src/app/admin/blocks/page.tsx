@@ -1,14 +1,8 @@
 import { getAllBlocks, getBlocksByCategory } from '../../../core/blocks/registry';
 import type { BlockCategory, BlockDefinition } from '../../../core/blocks/types';
 
-// Import all blocks to ensure they're registered
-import '../../../blocks/hero';
-import '../../../blocks/features';
-import '../../../blocks/cta';
-import '../../../blocks/rich-text';
-import '../../../blocks/video';
-import '../../../blocks/blog-list';
-import '../../../blocks/team-list';
+// Import blocks entry point to ensure all blocks are registered
+import '@/blocks';
 
 const categoryLabels: Record<BlockCategory, string> = {
   content: 'Content',
