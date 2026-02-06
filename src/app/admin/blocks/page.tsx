@@ -1,5 +1,6 @@
 import { getAllBlocks, getBlocksByCategory } from '../../../core/blocks/registry';
 import type { BlockCategory, BlockDefinition } from '../../../core/blocks/types';
+import { ServerIcon } from '@/lib/icons/ServerIcon';
 
 // Import blocks entry point to ensure all blocks are registered
 import '@/blocks';
@@ -33,7 +34,7 @@ function BlockCard({ block }: { block: BlockDefinition }) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xl">
-            {block.icon || '📦'}
+            {block.icon ? <ServerIcon name={block.icon} size={20} /> : '📦'}
           </div>
           <div>
             <h3 className="font-semibold text-gray-900">{block.label}</h3>
