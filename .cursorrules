@@ -1,3 +1,5 @@
+<!-- Source of truth: CLAUDE.md — keep all agent rule files in sync -->
+
 # Astra CMS
 
 AI-first, block-based CMS built with Next.js. Local development works out of the box — no Firebase or API keys needed.
