@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "AI-first, block-based CMS for organizations",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kaimaan/astra-cms.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
