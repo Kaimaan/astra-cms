@@ -3,6 +3,7 @@ import { getContentProvider } from '@/infrastructure';
 import { validateId, validateBody } from '@/lib/validation/validate';
 import { updatePageSchema } from '@/lib/validation/schemas/page-schemas';
 import { withAuthParams } from '@/core/auth/middleware';
+import { sanitizeBlockContent } from '@/lib/sanitize';
 
 export const DELETE = withAuthParams('pages:delete', async (request, { params }, _auth) => {
   try {
@@ -89,7 +90,7 @@ export const PATCH = withAuthParams('pages:update', async (request, { params }, 
     const updates: Record<string, unknown> = {};
     if (title !== undefined) updates.title = title;
     if (paths !== undefined) updates.paths = paths;
-    if (blocks !== undefined) updates.blocks = blocks;
+    if (blocks !== undefined) updates.blocks = sanitizeBlockContent(blocks as unknown[]);
     if (seo !== undefined) updates.seo = seo;
     if (status !== undefined) updates.status = status;
 

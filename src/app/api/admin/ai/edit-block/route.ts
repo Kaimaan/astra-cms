@@ -8,6 +8,7 @@ import { getEditableFields, schemaToDescription } from '@/lib/schema/schema-to-f
 import { validateBody } from '@/lib/validation/validate';
 import { editBlockSchema } from '@/lib/validation/schemas/ai-schemas';
 import { withAuth } from '@/core/auth/middleware';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL = 'gemini-3-flash-preview';
@@ -210,6 +211,11 @@ Only output the JSON object, nothing else.`;
         explanation: response.text,
         error: 'Failed to parse AI response. The AI said: ' + response.text.substring(0, 200),
       });
+    }
+
+    // Sanitize HTML content in rich-text blocks before returning
+    if (blockType === 'rich-text' && typeof parsed.updatedProps.content === 'string') {
+      parsed.updatedProps.content = sanitizeHtml(parsed.updatedProps.content);
     }
 
     return NextResponse.json({
