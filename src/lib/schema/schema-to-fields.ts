@@ -16,6 +16,7 @@ export interface EditableField {
   options?: string[]; // For enums
   nested?: EditableField[]; // For objects
   itemType?: string; // For arrays
+  defaultValue?: unknown; // Schema-defined default value
 }
 
 // Type for accessing Zod internal definitions
@@ -37,9 +38,10 @@ function getDef(schema: ZodType): ZodDef {
 /**
  * Get the inner type of a Zod schema (unwrapping optional, default, etc.)
  */
-function unwrapType(schema: ZodType): { schema: ZodType; required: boolean } {
+function unwrapType(schema: ZodType): { schema: ZodType; required: boolean; defaultValue?: unknown } {
   let required = true;
   let current = schema;
+  let defaultValue: unknown = undefined;
 
   // Keep unwrapping until we get to the base type
   while (true) {
@@ -47,10 +49,14 @@ function unwrapType(schema: ZodType): { schema: ZodType; required: boolean } {
     const typeName = def.typeName;
 
     if (typeName === 'ZodOptional' || typeName === 'ZodDefault' || typeName === 'ZodNullable') {
-      // Optional and nullable make the field not required
-      // Default keeps it required but still needs unwrapping
       if (typeName === 'ZodOptional' || typeName === 'ZodNullable') {
         required = false;
+      }
+      if (typeName === 'ZodDefault') {
+        const defWithDefault = def as unknown as { defaultValue: () => unknown };
+        if (typeof defWithDefault.defaultValue === 'function') {
+          defaultValue = defWithDefault.defaultValue();
+        }
       }
       if (def.innerType) {
         current = def.innerType;
@@ -62,7 +68,7 @@ function unwrapType(schema: ZodType): { schema: ZodType; required: boolean } {
     }
   }
 
-  return { schema: current, required };
+  return { schema: current, required, defaultValue };
 }
 
 /**
@@ -97,7 +103,7 @@ export function getEditableFields(schema: ZodType, currentProps?: Record<string,
   const shape = (schema as ZodObject<Record<string, ZodType>>).shape;
 
   for (const [name, fieldSchema] of Object.entries(shape)) {
-    const { schema: innerSchema, required } = unwrapType(fieldSchema);
+    const { schema: innerSchema, required, defaultValue } = unwrapType(fieldSchema);
     const innerTypeName = getTypeName(innerSchema);
     const innerDef = getDef(innerSchema);
 
@@ -107,6 +113,10 @@ export function getEditableFields(schema: ZodType, currentProps?: Record<string,
       label: nameToLabel(name),
       required,
     };
+
+    if (defaultValue !== undefined) {
+      field.defaultValue = defaultValue;
+    }
 
     switch (innerTypeName) {
       case 'ZodString':

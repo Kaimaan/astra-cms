@@ -1,23 +1,12 @@
+import Link from 'next/link';
 import { getAllBlocks, getBlocksByCategory } from '../../../core/blocks/registry';
 import type { BlockCategory, BlockDefinition } from '../../../core/blocks/types';
 import { ServerIcon } from '@/lib/icons/ServerIcon';
+import { getEditableFields } from '@/lib/schema/schema-to-fields';
+import { categoryLabels, categoryColors } from '@/lib/blocks/category-meta';
 
 // Import blocks entry point to ensure all blocks are registered
 import '@/blocks';
-
-const categoryLabels: Record<BlockCategory, string> = {
-  content: 'Content',
-  media: 'Media',
-  layout: 'Layout',
-  interactive: 'Interactive',
-};
-
-const categoryColors: Record<BlockCategory, string> = {
-  content: 'bg-blue-100 text-blue-800',
-  media: 'bg-purple-100 text-purple-800',
-  layout: 'bg-green-100 text-green-800',
-  interactive: 'bg-orange-100 text-orange-800',
-};
 
 const categoryIcons: Record<BlockCategory, string> = {
   content: '📝',
@@ -28,33 +17,36 @@ const categoryIcons: Record<BlockCategory, string> = {
 
 function BlockCard({ block }: { block: BlockDefinition }) {
   const category = block.category || 'content';
+  const fields = getEditableFields(block.schema);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xl">
-            {block.icon ? <ServerIcon name={block.icon} size={20} /> : '📦'}
+    <Link href={`/admin/blocks/${block.type}`}>
+      <div className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xl">
+              {block.icon ? <ServerIcon name={block.icon} size={20} /> : '📦'}
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">{block.label}</h3>
+              <code className="text-xs text-gray-500">{block.type}</code>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{block.label}</h3>
-            <code className="text-xs text-gray-500">{block.type}</code>
-          </div>
+          <span className={`text-xs px-2 py-1 rounded-full font-medium ${categoryColors[category]}`}>
+            {categoryLabels[category]}
+          </span>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full font-medium ${categoryColors[category]}`}>
-          {categoryLabels[category]}
-        </span>
-      </div>
 
-      {block.description && (
-        <p className="text-sm text-gray-600 mb-3">{block.description}</p>
-      )}
+        {block.description && (
+          <p className="text-sm text-gray-600 mb-3">{block.description}</p>
+        )}
 
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>Version {block.version}</span>
-        <span>Schema: {block.schema ? '✓' : '✗'}</span>
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>Version {block.version}</span>
+          <span>{fields.length} fields</span>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

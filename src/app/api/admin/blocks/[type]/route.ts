@@ -22,6 +22,8 @@ export async function GET(
     description: definition.description || '',
     icon: definition.icon || '',
     category: definition.category || '',
+    version: definition.version,
+    defaultProps: definition.defaultProps,
     fields,
   });
 }
