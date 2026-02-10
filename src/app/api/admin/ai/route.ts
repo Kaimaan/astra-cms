@@ -5,6 +5,7 @@ import { calculateCost } from '@/core/ai/pricing';
 import { GEMINI_MODEL, ANTHROPIC_MODEL } from '@/infrastructure/ai';
 import { validateBody } from '@/lib/validation/validate';
 import { aiActionSchema } from '@/lib/validation/schemas/ai-schemas';
+import { withAuth } from '@/core/auth/middleware';
 import type {
   AIGenerateRequest,
   AIImproveRequest,
@@ -51,7 +52,7 @@ async function logUsage(
 }
 
 // POST /api/admin/ai - AI operations
-export async function POST(request: NextRequest) {
+export const POST = withAuth('pages:update', async (request, _auth) => {
   try {
     if (!isAIEnabled()) {
       return NextResponse.json(
@@ -101,13 +102,13 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 // GET /api/admin/ai - Check AI status
-export async function GET() {
+export const GET = withAuth('pages:read', async (_request, _auth) => {
   const enabled = isAIEnabled();
   return NextResponse.json({
     configured: enabled,
     provider: enabled ? getAIProvider()?.name : null,
   });
-}
+});

@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import '@/blocks'; // trigger block registration
 import { getBlockDefinition } from '@/core/blocks/registry';
 import { getEditableFields } from '@/lib/schema/schema-to-fields';
+import { withAuthParams } from '@/core/auth/middleware';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ type: string }> }
-) {
+export const GET = withAuthParams('pages:read', async (_request, { params }, _auth) => {
   const { type } = await params;
   const definition = getBlockDefinition(type);
 
@@ -26,4 +24,4 @@ export async function GET(
     defaultProps: definition.defaultProps,
     fields,
   });
-}
+});

@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
 import { validateId } from '@/lib/validation/validate';
+import { withAuthParams } from '@/core/auth/middleware';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export const POST = withAuthParams('pages:publish', async (_request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -32,9 +29,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export const DELETE = withAuthParams('pages:publish', async (_request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -60,4 +57,4 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     );
   }
-}
+});

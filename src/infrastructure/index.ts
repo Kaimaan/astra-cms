@@ -37,6 +37,7 @@
  */
 
 import { setContentProvider, getContentProvider } from '@/core/content/provider';
+import { setAuthProvider, getAuthProvider, isAuthEnabled } from '@/core/auth/provider';
 import { localContentProvider } from './local';
 
 // -----------------------------------------------------------------------------
@@ -54,4 +55,32 @@ import { localContentProvider } from './local';
 
 setContentProvider(localContentProvider);
 
+// -----------------------------------------------------------------------------
+// AUTH PROVIDER: None (open access for local dev)
+// -----------------------------------------------------------------------------
+// To enable authentication, create an AuthProvider and register it here:
+//
+//   import { myAuthProvider } from './my-auth';
+//   setAuthProvider(myAuthProvider);
+//
+// An AuthProvider implements verifyRequest(request) which extracts and verifies
+// a token/session from the request and returns a User with their role.
+// See /src/core/auth/provider.ts for the interface definition.
+//
+// Example with custom JWT:
+//
+//   const jwtAuthProvider: AuthProvider = {
+//     async verifyRequest(request) {
+//       const token = request.headers.get('authorization')?.replace('Bearer ', '');
+//       if (!token) return null;
+//       const payload = await verifyJWT(token);
+//       return { id: payload.sub, email: payload.email, role: payload.role, createdAt: new Date() };
+//     },
+//   };
+//   setAuthProvider(jwtAuthProvider);
+//
+// When no auth provider is set, all admin routes are open (zero-config local dev).
+// -----------------------------------------------------------------------------
+
 export { getContentProvider };
+export { setAuthProvider, getAuthProvider, isAuthEnabled };

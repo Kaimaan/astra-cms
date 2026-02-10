@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { getContentProvider } from '@/infrastructure';
+import { withAuth } from '@/core/auth/middleware';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
@@ -20,7 +21,7 @@ async function ensureDir(dir: string) {
 }
 
 // GET /api/admin/assets - List all assets
-export async function GET() {
+export const GET = withAuth('assets:read', async (_request, _auth) => {
   try {
     const provider = getContentProvider();
     const assets = await provider.getAssets({ sortBy: 'createdAt', sortOrder: 'desc' });
@@ -29,10 +30,10 @@ export async function GET() {
     console.error('Error fetching assets:', error);
     return NextResponse.json({ error: 'Failed to fetch assets' }, { status: 500 });
   }
-}
+});
 
 // POST /api/admin/assets - Upload new asset
-export async function POST(request: NextRequest) {
+export const POST = withAuth('assets:create', async (request, _auth) => {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -76,4 +77,4 @@ export async function POST(request: NextRequest) {
     console.error('Error uploading asset:', error);
     return NextResponse.json({ error: 'Failed to upload asset' }, { status: 500 });
   }
-}
+});

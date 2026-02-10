@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
 import { validateId, validateBody } from '@/lib/validation/validate';
 import { restoreRevisionSchema } from '@/lib/validation/schemas/page-schemas';
+import { withAuthParams } from '@/core/auth/middleware';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export const POST = withAuthParams('pages:update', async (request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -37,4 +34,4 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       { status }
     );
   }
-}
+});

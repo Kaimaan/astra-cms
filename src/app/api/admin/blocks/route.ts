@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import '@/blocks';
 import { getAllBlocks } from '@/core/blocks/registry';
+import { withAuth } from '@/core/auth/middleware';
 
-export async function GET() {
+export const GET = withAuth('pages:read', async (_request, _auth) => {
   const blocks = getAllBlocks().map((block) => ({
     type: block.type,
     label: block.label,
@@ -14,4 +15,4 @@ export async function GET() {
   }));
 
   return NextResponse.json(blocks);
-}
+});

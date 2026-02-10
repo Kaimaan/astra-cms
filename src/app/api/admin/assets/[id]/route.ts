@@ -4,14 +4,12 @@ import path from 'path';
 import { getContentProvider } from '@/infrastructure';
 import { validateId, validateBody } from '@/lib/validation/validate';
 import { updateAssetSchema } from '@/lib/validation/schemas/asset-schemas';
+import { withAuthParams } from '@/core/auth/middleware';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
 // GET /api/admin/assets/[id] - Get single asset
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams('assets:read', async (_request, { params }, _auth) => {
   try {
     const { id } = await params;
     const provider = getContentProvider();
@@ -26,13 +24,10 @@ export async function GET(
     console.error('Error fetching asset:', error);
     return NextResponse.json({ error: 'Failed to fetch asset' }, { status: 500 });
   }
-}
+});
 
 // PATCH /api/admin/assets/[id] - Update asset metadata
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PATCH = withAuthParams('assets:update', async (request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -49,13 +44,10 @@ export async function PATCH(
     console.error('Error updating asset:', error);
     return NextResponse.json({ error: 'Failed to update asset' }, { status: 500 });
   }
-}
+});
 
 // DELETE /api/admin/assets/[id] - Delete asset
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams('assets:delete', async (_request, { params }, _auth) => {
   try {
     const { id } = await params;
     const provider = getContentProvider();
@@ -84,4 +76,4 @@ export async function DELETE(
     console.error('Error deleting asset:', error);
     return NextResponse.json({ error: 'Failed to delete asset' }, { status: 500 });
   }
-}
+});

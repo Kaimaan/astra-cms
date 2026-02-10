@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
 import { validateId, validateBody } from '@/lib/validation/validate';
 import { updatePageSchema } from '@/lib/validation/schemas/page-schemas';
+import { withAuthParams } from '@/core/auth/middleware';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export const DELETE = withAuthParams('pages:delete', async (request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -40,9 +37,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export const GET = withAuthParams('pages:read', async (_request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -66,9 +63,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export const PATCH = withAuthParams('pages:update', async (request, { params }, _auth) => {
   try {
     const { id } = await params;
     const idError = validateId(id);
@@ -107,4 +104,4 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     );
   }
-}
+});

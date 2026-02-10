@@ -7,6 +7,7 @@ import { getBlockDefinition } from '@/core/blocks/registry';
 import { getEditableFields, schemaToDescription } from '@/lib/schema/schema-to-fields';
 import { validateBody } from '@/lib/validation/validate';
 import { editBlockSchema } from '@/lib/validation/schemas/ai-schemas';
+import { withAuth } from '@/core/auth/middleware';
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL = 'gemini-3-flash-preview';
@@ -117,7 +118,7 @@ async function callGemini(
   return { text, usage };
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export const POST = withAuth('pages:update', async (request, _auth): Promise<NextResponse> => {
   try {
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -226,4 +227,4 @@ Only output the JSON object, nothing else.`;
       { status: 500 }
     );
   }
-}
+});

@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
 import { validateBody } from '@/lib/validation/validate';
 import { createPageSchema } from '@/lib/validation/schemas/page-schemas';
+import { withAuth } from '@/core/auth/middleware';
 import config from '../../../../../astra.config';
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth('pages:read', async (request, _auth) => {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'all';
@@ -42,9 +43,9 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth('pages:create', async (request, _auth) => {
   try {
     const validation = await validateBody(request, createPageSchema);
     if (!validation.success) return validation.response;
@@ -81,4 +82,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

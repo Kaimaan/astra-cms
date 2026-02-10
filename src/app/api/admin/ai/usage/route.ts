@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUsageProvider } from '@/core/ai/usage-provider';
+import { withAuth } from '@/core/auth/middleware';
 
 // GET /api/admin/ai/usage - Get usage data
-export async function GET(request: NextRequest) {
+export const GET = withAuth('site:read', async (request, _auth) => {
   try {
     const usageProvider = getUsageProvider();
     if (!usageProvider) {
@@ -36,4 +37,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
