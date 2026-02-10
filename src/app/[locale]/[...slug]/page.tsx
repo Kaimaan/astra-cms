@@ -4,7 +4,7 @@ import { BlockRenderer } from '@/components/BlockRenderer';
 import { EditModePage } from '@/components/editor';
 import { getContentProvider } from '@/infrastructure';
 import { generatePageMetadata, generate404Metadata } from '@/core/seo/metadata';
-import config from '../../../../astra.config';
+import { getConfig } from '@/core/config';
 
 // ISR: revalidate every hour (can be overridden by on-demand revalidation)
 export const revalidate = 3600;
@@ -35,6 +35,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const fullPath = slug.join('/');
+
+  const config = await getConfig();
 
   try {
     const provider = getContentProvider();

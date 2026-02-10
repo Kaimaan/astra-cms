@@ -1,11 +1,9 @@
-import config from '../../../../astra.config';
+import { getConfig } from '@/core/config';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Input, Textarea } from '@/components/ui/Input';
 import { IconBox } from '@/components/ui/IconBox';
-
-const { tokens } = config;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -83,7 +81,10 @@ function ShadowBox({ name, value }: { name: string; value: string }) {
   );
 }
 
-export default function DesignSystemPage() {
+export default async function DesignSystemPage() {
+  const config = await getConfig();
+  const { tokens } = config;
+
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
       <div className="mb-10">

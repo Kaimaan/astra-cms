@@ -4,7 +4,7 @@ import { validateBody } from '@/lib/validation/validate';
 import { createPageSchema } from '@/lib/validation/schemas/page-schemas';
 import { withAuth } from '@/core/auth/middleware';
 import { apiError, ErrorCode } from '@/lib/api-errors';
-import config from '../../../../../astra.config';
+import { getConfig } from '@/core/config';
 
 export const GET = withAuth('pages:read', async (request, _auth) => {
   try {
@@ -58,6 +58,7 @@ export const POST = withAuth('pages:create', async (request, _auth) => {
       return apiError(`A page with the path "/${normalizedPath}" already exists`, ErrorCode.CONFLICT, 409);
     }
 
+    const config = await getConfig();
     const locale = config.i18n.defaultLocale;
     const newPage = await provider.createPage({
       schemaVersion: 2,

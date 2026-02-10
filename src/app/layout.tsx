@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
-import config from '../../astra.config';
+import { getConfig } from '@/core/config';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: {
-    default: config.site.name,
-    template: `%s | ${config.site.name}`,
-  },
-  description: config.site.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getConfig();
+  return {
+    title: {
+      default: config.site.name,
+      template: `%s | ${config.site.name}`,
+    },
+    description: config.site.description,
+  };
+}
 
 export default function RootLayout({
   children,

@@ -91,3 +91,4 @@ if (config.hooks) {
 
 export { getContentProvider };
 export { setAuthProvider, getAuthProvider, isAuthEnabled };
+export { setConfigProvider, getConfigProvider } from '@/core/config';

@@ -7,7 +7,7 @@
  * - Region: 2-letter ISO country code (detected via geo-IP)
  */
 
-import config from '../../../astra.config';
+import { getConfig } from '@/core/config';
 
 // Locale pattern: 2-letter language + hyphen + 2-letter region (BCP 47)
 const LOCALE_PATTERN = /^[a-z]{2}-[A-Z]{2}$/;
@@ -19,7 +19,8 @@ const SUPPORTED_LANGUAGES = ['en'];
 // GETTERS
 // =============================================================================
 
-export function getDefaultLocale(): string {
+export async function getDefaultLocale(): Promise<string> {
+  const config = await getConfig();
   return config.i18n.defaultLocale;
 }
 
@@ -31,11 +32,13 @@ export function getSupportedLanguages(): string[] {
   return SUPPORTED_LANGUAGES;
 }
 
-export function getLocaleStrategy(): 'prefix' | 'domain' | 'none' {
+export async function getLocaleStrategy(): Promise<'prefix' | 'domain' | 'none'> {
+  const config = await getConfig();
   return config.i18n.strategy;
 }
 
-export function getSlugStrategy(): 'shared' | 'per-locale' {
+export async function getSlugStrategy(): Promise<'shared' | 'per-locale'> {
+  const config = await getConfig();
   return config.i18n.slugStrategy;
 }
 
@@ -62,7 +65,8 @@ export function isValidLocale(locale: string): boolean {
   return SUPPORTED_LANGUAGES.includes(language);
 }
 
-export function isDefaultLocale(locale: string): boolean {
+export async function isDefaultLocale(locale: string): Promise<boolean> {
+  const config = await getConfig();
   return locale.toLowerCase() === config.i18n.defaultLocale.toLowerCase();
 }
 
@@ -103,8 +107,8 @@ export function getRegion(locale: string): string {
 /**
  * Build a localized URL path
  */
-export function buildLocalizedPath(path: string, locale: string): string {
-  const strategy = getLocaleStrategy();
+export async function buildLocalizedPath(path: string, locale: string): Promise<string> {
+  const strategy = await getLocaleStrategy();
 
   if (strategy === 'none') {
     return path;
@@ -122,15 +126,15 @@ export function buildLocalizedPath(path: string, locale: string): string {
 /**
  * Extract locale from a URL path
  */
-export function extractLocaleFromPath(path: string): {
+export async function extractLocaleFromPath(path: string): Promise<{
   locale: string;
   pathWithoutLocale: string;
-} {
-  const strategy = getLocaleStrategy();
+}> {
+  const strategy = await getLocaleStrategy();
 
   if (strategy !== 'prefix') {
     return {
-      locale: getDefaultLocale(),
+      locale: await getDefaultLocale(),
       pathWithoutLocale: path,
     };
   }
@@ -146,7 +150,7 @@ export function extractLocaleFromPath(path: string): {
   }
 
   return {
-    locale: getDefaultLocale(),
+    locale: await getDefaultLocale(),
     pathWithoutLocale: path,
   };
 }

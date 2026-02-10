@@ -4,7 +4,7 @@ import { BlockRenderer } from '@/components/BlockRenderer';
 import { EditModePage } from '@/components/editor';
 import { getContentProvider } from '@/infrastructure';
 import { generatePageMetadata } from '@/core/seo/metadata';
-import config from '../../../astra.config';
+import { getConfig } from '@/core/config';
 
 // ISR: revalidate every hour (can be overridden by on-demand revalidation)
 export const revalidate = 3600;
@@ -19,12 +19,15 @@ interface HomePageProps {
 
 // Pre-render for all configured locales
 export async function generateStaticParams() {
+  const config = await getConfig();
   return config.i18n.locales.map((locale) => ({ locale }));
 }
 
 // Generate SEO metadata
 export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
   const { locale } = await params;
+
+  const config = await getConfig();
 
   try {
     const provider = getContentProvider();
