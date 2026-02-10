@@ -27,6 +27,8 @@ const config: AstraConfig = {
     name: 'Astra CMS',
     description: 'AI-first, block-based CMS for organizations',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    // favicon: '/favicon.ico',
+    // appleTouchIcon: '/apple-touch-icon.png',
   },
 
   // ==========================================================================

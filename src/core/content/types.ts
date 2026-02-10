@@ -302,6 +302,12 @@ export interface Site {
   /** Global components */
   globals: SiteGlobals;
 
+  /** Path to favicon (admin-editable, overrides astra.config.ts) */
+  favicon?: string;
+
+  /** Path to Apple touch icon (admin-editable, overrides astra.config.ts) */
+  appleTouchIcon?: string;
+
   /** Timestamps */
   updatedAt: Date;
 }

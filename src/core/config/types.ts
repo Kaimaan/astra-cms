@@ -17,6 +17,10 @@ export interface SiteConfig {
   name: string;
   description: string;
   url: string;
+  /** Path to favicon (e.g. "/favicon.ico") */
+  favicon?: string;
+  /** Path to Apple touch icon (e.g. "/apple-touch-icon.png") */
+  appleTouchIcon?: string;
 }
 
 // =============================================================================
