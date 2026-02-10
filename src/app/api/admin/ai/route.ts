@@ -3,6 +3,8 @@ import { getAIProvider, isAIEnabled } from '@/core/ai/provider';
 import { getUsageProvider } from '@/core/ai/usage-provider';
 import { calculateCost } from '@/core/ai/pricing';
 import { GEMINI_MODEL, ANTHROPIC_MODEL } from '@/infrastructure/ai';
+import { validateBody } from '@/lib/validation/validate';
+import { aiActionSchema } from '@/lib/validation/schemas/ai-schemas';
 import type {
   AIGenerateRequest,
   AIImproveRequest,
@@ -62,8 +64,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { action, ...params } = body;
+    const validation = await validateBody(request, aiActionSchema);
+    if (!validation.success) return validation.response;
+    const { action, ...params } = validation.data;
 
     const provider = getAIProvider()!;
 
@@ -90,12 +93,6 @@ export async function POST(request: NextRequest) {
         const result = await provider.suggest(params as AISuggestRequest);
         return NextResponse.json(result);
       }
-
-      default:
-        return NextResponse.json(
-          { error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
     }
   } catch (error) {
     console.error('AI API error:', error);

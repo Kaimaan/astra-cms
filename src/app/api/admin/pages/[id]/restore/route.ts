@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
-
-function isValidId(id: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(id);
-}
+import { validateId, validateBody } from '@/lib/validation/validate';
+import { restoreRevisionSchema } from '@/lib/validation/schemas/page-schemas';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -12,18 +10,12 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    if (!isValidId(id)) {
-      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
-    }
-    const body = await request.json();
-    const { revisionId } = body;
+    const idError = validateId(id);
+    if (idError) return idError;
 
-    if (!revisionId || typeof revisionId !== 'string' || !isValidId(revisionId)) {
-      return NextResponse.json(
-        { error: 'Missing revisionId in request body' },
-        { status: 400 }
-      );
-    }
+    const validation = await validateBody(request, restoreRevisionSchema);
+    if (!validation.success) return validation.response;
+    const { revisionId } = validation.data;
 
     const provider = getContentProvider();
 

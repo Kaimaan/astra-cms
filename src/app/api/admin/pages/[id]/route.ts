@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
-
-function isValidId(id: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(id);
-}
+import { validateId, validateBody } from '@/lib/validation/validate';
+import { updatePageSchema } from '@/lib/validation/schemas/page-schemas';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -12,9 +10,9 @@ interface RouteParams {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    if (!isValidId(id)) {
-      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
-    }
+    const idError = validateId(id);
+    if (idError) return idError;
+
     const { searchParams } = new URL(request.url);
     const redirectToId = searchParams.get('redirectTo') || undefined;
 
@@ -47,9 +45,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    if (!isValidId(id)) {
-      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
-    }
+    const idError = validateId(id);
+    if (idError) return idError;
+
     const provider = getContentProvider();
     const page = await provider.getPage(id);
 
@@ -73,10 +71,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    if (!isValidId(id)) {
-      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
-    }
-    const body = await request.json();
+    const idError = validateId(id);
+    if (idError) return idError;
+
+    const validation = await validateBody(request, updatePageSchema);
+    if (!validation.success) return validation.response;
+    const { changeDescription, title, paths, blocks, seo, status } = validation.data;
 
     const provider = getContentProvider();
 
@@ -89,8 +89,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Whitelist allowed fields
-    const { changeDescription, title, paths, blocks, seo, status } = body;
     const updates: Record<string, unknown> = {};
     if (title !== undefined) updates.title = title;
     if (paths !== undefined) updates.paths = paths;

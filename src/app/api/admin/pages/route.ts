@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
+import { validateBody } from '@/lib/validation/validate';
+import { createPageSchema } from '@/lib/validation/schemas/page-schemas';
 import config from '../../../../../astra.config';
 
 export async function GET(request: NextRequest) {
@@ -44,33 +46,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { title, path } = body;
-
-    if (!title || typeof title !== 'string' || !title.trim()) {
-      return NextResponse.json(
-        { error: 'Title is required' },
-        { status: 400 }
-      );
-    }
-
-    if (typeof path !== 'string') {
-      return NextResponse.json(
-        { error: 'URL path is required' },
-        { status: 400 }
-      );
-    }
-
-    // Normalize path: strip leading/trailing slashes
-    const normalizedPath = path.replace(/^\/+|\/+$/g, '');
-
-    // Validate path format (allow empty for homepage, alphanumeric with hyphens/slashes)
-    if (normalizedPath && !/^[a-zA-Z0-9][a-zA-Z0-9\-/]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/.test(normalizedPath)) {
-      return NextResponse.json(
-        { error: 'Invalid path. Use only letters, numbers, hyphens, and forward slashes.' },
-        { status: 400 }
-      );
-    }
+    const validation = await validateBody(request, createPageSchema);
+    if (!validation.success) return validation.response;
+    const { title, path: normalizedPath } = validation.data;
 
     // Check for duplicate paths
     const provider = getContentProvider();
@@ -90,7 +68,7 @@ export async function POST(request: NextRequest) {
       schemaVersion: 2,
       locale,
       paths: { [locale]: normalizedPath },
-      title: title.trim(),
+      title,
       status: 'draft',
       blocks: [],
     });

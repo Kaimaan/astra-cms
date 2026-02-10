@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unlink } from 'fs/promises';
 import path from 'path';
 import { getContentProvider } from '@/infrastructure';
+import { validateId, validateBody } from '@/lib/validation/validate';
+import { updateAssetSchema } from '@/lib/validation/schemas/asset-schemas';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
@@ -33,10 +35,14 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const updates = await request.json();
+    const idError = validateId(id);
+    if (idError) return idError;
+
+    const validation = await validateBody(request, updateAssetSchema);
+    if (!validation.success) return validation.response;
 
     const provider = getContentProvider();
-    const asset = await provider.updateAsset(id, updates);
+    const asset = await provider.updateAsset(id, validation.data);
 
     return NextResponse.json(asset);
   } catch (error) {

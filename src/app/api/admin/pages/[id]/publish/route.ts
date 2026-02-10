@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
-
-function isValidId(id: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(id);
-}
+import { validateId } from '@/lib/validation/validate';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -12,9 +9,8 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    if (!isValidId(id)) {
-      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
-    }
+    const idError = validateId(id);
+    if (idError) return idError;
 
     const provider = getContentProvider();
 
@@ -41,9 +37,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    if (!isValidId(id)) {
-      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
-    }
+    const idError = validateId(id);
+    if (idError) return idError;
 
     const provider = getContentProvider();
 

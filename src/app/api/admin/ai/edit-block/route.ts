@@ -5,6 +5,8 @@ import type { AIUsageRecord } from '@/core/ai/types';
 import '@/blocks';
 import { getBlockDefinition } from '@/core/blocks/registry';
 import { getEditableFields, schemaToDescription } from '@/lib/schema/schema-to-fields';
+import { validateBody } from '@/lib/validation/validate';
+import { editBlockSchema } from '@/lib/validation/schemas/ai-schemas';
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL = 'gemini-3-flash-preview';
@@ -115,7 +117,7 @@ async function callGemini(
   return { text, usage };
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse<EditBlockResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -129,7 +131,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<EditBlock
       );
     }
 
-    const body: EditBlockRequest = await request.json();
+    const validation = await validateBody(request, editBlockSchema);
+    if (!validation.success) return validation.response;
     const {
       blockType,
       blockLabel,
@@ -137,7 +140,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<EditBlock
       currentProps,
       userRequest,
       conversationHistory = [],
-    } = body;
+    } = validation.data;
 
     // Resolve block metadata from registry if not provided
     let resolvedLabel = blockLabel || blockType;
