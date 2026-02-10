@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -317,6 +317,14 @@ function AdminSidebar() {
 
 function AdminHeader() {
   const pathname = usePathname();
+  const [draftCount, setDraftCount] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/admin/pages?status=draft')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setDraftCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => {});
+  }, [pathname]);
 
   const getPageTitle = () => {
     if (pathname === '/admin') return 'Dashboard';
@@ -334,6 +342,18 @@ function AdminHeader() {
         <h1 className="text-lg font-semibold text-gray-900">{getPageTitle()}</h1>
       </div>
       <div className="flex items-center gap-3">
+        {/* Draft pages indicator */}
+        {draftCount > 0 && (
+          <Link
+            href="/admin/pages?status=draft"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            {draftCount} unpublished
+          </Link>
+        )}
         {/* Search */}
         <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

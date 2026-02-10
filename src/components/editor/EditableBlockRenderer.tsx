@@ -10,7 +10,10 @@
  * server components. Instead, we show preview representations.
  */
 
+import { useState, useCallback } from 'react';
 import { useEditMode } from './EditModeProvider';
+import { BlockPicker } from '@/components/admin/BlockPicker';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import * as LucideIcons from 'lucide-react';
 
@@ -21,18 +24,67 @@ function getIconComponent(name: string): LucideIcons.LucideIcon | null {
 }
 
 export function EditableBlockRenderer() {
-  const { state } = useEditMode();
+  const { state, addBlock } = useEditMode();
+  const [showPicker, setShowPicker] = useState(false);
+
+  const handleBlockSelect = useCallback((blockMeta: { type: string; version: number; defaultProps: unknown }) => {
+    const newBlock = {
+      id: `block_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`,
+      type: blockMeta.type,
+      version: blockMeta.version,
+      props: blockMeta.defaultProps,
+    };
+    addBlock(newBlock);
+    setShowPicker(false);
+  }, [addBlock]);
 
   return (
     <>
-      {state.page.blocks.map((block) => (
-        <EditableBlockPreview
-          key={block.id}
-          blockId={block.id}
-          blockType={block.type}
-          blockProps={block.props as Record<string, unknown>}
-        />
-      ))}
+      {state.page.blocks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-32 px-8">
+          <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mb-6">
+            <svg className="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Start building your page</h3>
+          <p className="text-gray-500 text-center max-w-sm mb-6">
+            Add your first block to start designing this page. Choose from heroes, features, CTAs, and more.
+          </p>
+          <Button onClick={() => setShowPicker(true)}>
+            Add First Block
+          </Button>
+        </div>
+      ) : (
+        <>
+          {state.page.blocks.map((block, index) => (
+            <EditableBlockPreview
+              key={block.id}
+              blockId={block.id}
+              blockType={block.type}
+              blockProps={block.props as Record<string, unknown>}
+              index={index}
+              totalBlocks={state.page.blocks.length}
+            />
+          ))}
+          <div className="flex justify-center py-8">
+            <Button variant="outline" size="sm" onClick={() => setShowPicker(true)}>
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Block
+              </span>
+            </Button>
+          </div>
+        </>
+      )}
+
+      <BlockPicker
+        isOpen={showPicker}
+        onClose={() => setShowPicker(false)}
+        onSelect={handleBlockSelect}
+      />
     </>
   );
 }
@@ -41,14 +93,18 @@ interface EditableBlockPreviewProps {
   blockId: string;
   blockType: string;
   blockProps: Record<string, unknown>;
+  index: number;
+  totalBlocks: number;
 }
 
 function EditableBlockPreview({
   blockId,
   blockType,
   blockProps,
+  index,
+  totalBlocks,
 }: EditableBlockPreviewProps) {
-  const { state } = useEditMode();
+  const { state, selectBlock, setEditMode, deleteBlock, reorderBlocks } = useEditMode();
   const isSelected = state.selectedBlockId === blockId;
 
   // Get display info based on block type
@@ -63,7 +119,7 @@ function EditableBlockPreview({
       data-block-id={blockId}
       data-block-type={blockType}
     >
-      {/* Block type indicator */}
+      {/* Block type indicator + delete button */}
       <div
         className={cn(
           'absolute top-2 left-2 z-10 flex items-center gap-2 transition-opacity duration-200',
@@ -78,6 +134,80 @@ function EditableBlockPreview({
         >
           {blockInfo.label}
         </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            reorderBlocks(index, index - 1);
+          }}
+          disabled={index === 0}
+          className="p-1 bg-gray-900 hover:bg-gray-700 text-white rounded shadow-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Move up"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            reorderBlocks(index, index + 1);
+          }}
+          disabled={index === totalBlocks - 1}
+          className="p-1 bg-gray-900 hover:bg-gray-700 text-white rounded shadow-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Move down"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            selectBlock(blockId);
+            setEditMode('properties');
+          }}
+          className={cn(
+            'p-1 text-white rounded shadow-sm transition-colors',
+            isSelected && state.editMode === 'properties'
+              ? 'bg-primary-600 hover:bg-primary-700'
+              : 'bg-gray-900 hover:bg-gray-700'
+          )}
+          title="Edit properties"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            selectBlock(blockId);
+            setEditMode('ai');
+          }}
+          className={cn(
+            'p-1 text-white rounded shadow-sm transition-colors',
+            isSelected && state.editMode === 'ai'
+              ? 'bg-primary-600 hover:bg-primary-700'
+              : 'bg-gray-900 hover:bg-gray-700'
+          )}
+          title="Edit with AI"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteBlock(blockId);
+          }}
+          className="p-1 bg-red-600 hover:bg-red-700 text-white rounded shadow-sm transition-colors"
+          title="Delete block"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
 
       {/* Selection border on hover */}
@@ -116,7 +246,6 @@ function getBlockDisplayInfo(type: string, props: Record<string, unknown>): Bloc
     'rich-text': { label: 'Rich Text', icon: '📝', bgColor: 'bg-gradient-to-br from-gray-600 to-gray-800' },
     video: { label: 'Video', icon: '🎬', bgColor: 'bg-gradient-to-br from-red-500 to-red-700' },
     'blog-list': { label: 'Blog List', icon: '📰', bgColor: 'bg-gradient-to-br from-purple-500 to-purple-700' },
-    'team-list': { label: 'Team', icon: '👥', bgColor: 'bg-gradient-to-br from-orange-500 to-orange-700' },
   };
 
   return blockMeta[type] || { label: type, icon: '📦', bgColor: 'bg-gradient-to-br from-gray-500 to-gray-700' };
@@ -141,7 +270,6 @@ function BlockPreviewContent({ type, props, info }: BlockPreviewContentProps) {
     case 'video':
       return <VideoPreview props={props} />;
     case 'blog-list':
-    case 'team-list':
       return <CollectionBlockPreview type={type} props={props} info={info} />;
     default:
       return <GenericBlockPreview type={type} props={props} info={info} />;

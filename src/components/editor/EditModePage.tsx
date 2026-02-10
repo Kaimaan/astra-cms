@@ -9,10 +9,12 @@
  * - Chat panel for editing
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { EditModeProvider, useEditMode } from './EditModeProvider';
 import { EditableBlockRenderer } from './EditableBlockRenderer';
 import { ChatPanel } from './ChatPanel';
+import { BlockPropertiesPanel } from './BlockPropertiesPanel';
+import { PageSettingsPanel } from './PageSettingsPanel';
 import { Button } from '@/components/ui/Button';
 import type { Page } from '@/core/content/types';
 
@@ -31,6 +33,30 @@ export function EditModePage({ page }: EditModePageProps) {
 function EditModeLayout() {
   const { state, save, discard, selectBlock } = useEditMode();
   const { isDirty, isSaving, error } = state;
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [pageStatus, setPageStatus] = useState(state.page.status);
+
+  const handlePublishToggle = useCallback(async () => {
+    setIsPublishing(true);
+    try {
+      const method = pageStatus === 'published' ? 'DELETE' : 'POST';
+      const response = await fetch(
+        `/api/admin/pages/${encodeURIComponent(state.page.id)}/publish`,
+        { method }
+      );
+      if (response.ok) {
+        const updated = await response.json();
+        setPageStatus(updated.status);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to update page status');
+      }
+    } catch {
+      alert('Failed to update page status');
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [pageStatus, state.page.id]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -95,6 +121,17 @@ function EditModeLayout() {
 
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-900">{state.page.title}</span>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full ${
+                  pageStatus === 'published'
+                    ? 'bg-green-100 text-green-800'
+                    : pageStatus === 'scheduled'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                }`}
+              >
+                {pageStatus}
+              </span>
               {isDirty && (
                 <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
                   Unsaved
@@ -126,6 +163,28 @@ function EditModeLayout() {
             >
               Save Changes
             </Button>
+
+            {pageStatus === 'published' ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePublishToggle}
+                isLoading={isPublishing}
+                disabled={isDirty}
+              >
+                Unpublish
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handlePublishToggle}
+                isLoading={isPublishing}
+                disabled={isDirty}
+                className="bg-green-600 hover:bg-green-700 active:bg-green-800"
+              >
+                Publish
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -139,9 +198,15 @@ function EditModeLayout() {
           </div>
         </div>
 
-        {/* Chat panel */}
-        <div className="w-80 flex-shrink-0">
-          <ChatPanel />
+        {/* Side panel */}
+        <div className="w-80 flex-shrink-0 border-l border-gray-200 bg-white overflow-y-auto">
+          {!state.selectedBlockId ? (
+            <PageSettingsPanel />
+          ) : state.editMode === 'ai' ? (
+            <ChatPanel />
+          ) : (
+            <BlockPropertiesPanel />
+          )}
         </div>
       </div>
     </div>

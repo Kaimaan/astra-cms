@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
+import config from '../../../../../astra.config';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,6 +36,61 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching pages:', error);
     return NextResponse.json(
       { error: 'Failed to fetch pages' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { title, path } = body;
+
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      );
+    }
+
+    if (typeof path !== 'string') {
+      return NextResponse.json(
+        { error: 'URL path is required' },
+        { status: 400 }
+      );
+    }
+
+    // Normalize path: strip leading/trailing slashes
+    const normalizedPath = path.replace(/^\/+|\/+$/g, '');
+
+    // Check for duplicate paths
+    const provider = getContentProvider();
+    const existingPages = await provider.getPages({});
+    const duplicate = existingPages.find(p =>
+      Object.values(p.paths).some(existing => existing === normalizedPath)
+    );
+    if (duplicate) {
+      return NextResponse.json(
+        { error: `A page with the path "/${normalizedPath}" already exists` },
+        { status: 409 }
+      );
+    }
+
+    const locale = config.i18n.defaultLocale;
+    const newPage = await provider.createPage({
+      schemaVersion: 2,
+      locale,
+      paths: { [locale]: normalizedPath },
+      title: title.trim(),
+      status: 'draft',
+      blocks: [],
+    });
+
+    return NextResponse.json(newPage, { status: 201 });
+  } catch (error) {
+    console.error('Error creating page:', error);
+    return NextResponse.json(
+      { error: 'Failed to create page' },
       { status: 500 }
     );
   }

@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
 import { getContentProvider } from '@/infrastructure';
-import { PageEditorClient } from './PageEditorClient';
+import { Header } from '@/components/global/Header';
+import { Footer } from '@/components/global/Footer';
+import { PageActions } from './PageActions';
+import { PageBlocksEditor } from './PageBlocksEditor';
 
 interface PageEditorProps {
   params: Promise<{ pageId: string }>;
@@ -39,70 +41,34 @@ export default async function PageEditorPage({ params }: PageEditorProps) {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span
-            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-              page.status === 'published'
-                ? 'bg-green-100 text-green-800'
-                : page.status === 'scheduled'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-yellow-100 text-yellow-800'
-            }`}
-          >
-            {page.status}
-          </span>
-          <PageEditorClient pageId={page.id} revisions={page.revisions || []} />
-          <a
-            href={`/${page.locale}${primaryPath ? `/${primaryPath}` : ''}?edit=true`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
-          >
-            View page
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
-          <Button>Save Changes</Button>
-        </div>
+        <PageActions
+          pageId={page.id}
+          status={page.status}
+          locale={page.locale}
+          primaryPath={primaryPath}
+          revisions={page.revisions || []}
+        />
       </div>
 
       {/* Page Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content Area */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Blocks</h2>
-            {page.blocks.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-                <div className="text-4xl mb-3">📦</div>
-                <p className="text-gray-500 mb-4">No blocks yet</p>
-                <Button variant="outline" size="sm">
-                  Add Block
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {page.blocks.map((block, index) => (
-                  <div
-                    key={block.id}
-                    className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-400 text-sm">{index + 1}</span>
-                        <span className="font-medium text-gray-900">{block.type}</span>
-                      </div>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Main Content Area — Page Preview */}
+        <div className="lg:col-span-2">
+          <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+            {/* Live Header Preview */}
+            <div className="pointer-events-none opacity-75 border-b border-gray-100">
+              <Header />
+            </div>
+
+            {/* Page Content / Blocks */}
+            <div className="bg-white min-h-[400px]">
+              <PageBlocksEditor pageId={page.id} initialBlocks={page.blocks} />
+            </div>
+
+            {/* Live Footer Preview */}
+            <div className="pointer-events-none opacity-75 border-t border-gray-100">
+              <Footer />
+            </div>
           </div>
         </div>
 

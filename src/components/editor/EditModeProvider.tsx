@@ -26,6 +26,7 @@ interface EditModeState {
   page: Page;
   originalPage: Page;
   selectedBlockId: string | null;
+  editMode: 'properties' | 'ai';
   isDirty: boolean;
   isSaving: boolean;
   error: string | null;
@@ -41,12 +42,14 @@ type EditModeAction =
   | { type: 'SAVE_START' }
   | { type: 'SAVE_SUCCESS'; page: Page }
   | { type: 'SAVE_ERROR'; error: string }
+  | { type: 'SET_EDIT_MODE'; mode: 'properties' | 'ai' }
   | { type: 'DISCARD' };
 
 interface EditModeContextValue {
   state: EditModeState;
   selectedBlock: BlockInstance | null;
   selectBlock: (blockId: string | null) => void;
+  setEditMode: (mode: 'properties' | 'ai') => void;
   updateBlock: (blockId: string, props: unknown) => void;
   addBlock: (block: BlockInstance, afterBlockId?: string) => void;
   deleteBlock: (blockId: string) => void;
@@ -136,6 +139,9 @@ function editModeReducer(state: EditModeState, action: EditModeAction): EditMode
     case 'SAVE_ERROR':
       return { ...state, isSaving: false, error: action.error };
 
+    case 'SET_EDIT_MODE':
+      return { ...state, editMode: action.mode };
+
     case 'DISCARD':
       return {
         ...state,
@@ -170,6 +176,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
     page,
     originalPage: page,
     selectedBlockId: null,
+    editMode: 'properties' as const,
     isDirty: false,
     isSaving: false,
     error: null,
@@ -182,6 +189,10 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
 
   const selectBlock = useCallback((blockId: string | null) => {
     dispatch({ type: 'SELECT_BLOCK', blockId });
+  }, []);
+
+  const setEditMode = useCallback((mode: 'properties' | 'ai') => {
+    dispatch({ type: 'SET_EDIT_MODE', mode });
   }, []);
 
   const updateBlock = useCallback((blockId: string, props: unknown) => {
@@ -243,6 +254,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
       state,
       selectedBlock,
       selectBlock,
+      setEditMode,
       updateBlock,
       addBlock,
       deleteBlock,
@@ -255,6 +267,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
       state,
       selectedBlock,
       selectBlock,
+      setEditMode,
       updateBlock,
       addBlock,
       deleteBlock,
