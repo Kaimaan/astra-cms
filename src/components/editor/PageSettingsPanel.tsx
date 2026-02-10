@@ -24,6 +24,7 @@ export function PageSettingsPanel() {
   const [editingState, setEditingState] = useState<EditingState>({ step: 'idle' });
   const [fieldInput, setFieldInput] = useState('');
   const [isAILoading, setIsAILoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const currentMetaTitle = state.page.seo?.metaTitle || '';
@@ -49,7 +50,13 @@ export function PageSettingsPanel() {
       updatePage({ seo: { ...state.page.seo, metaDescription: fieldInput } });
     } else if (field === 'slug') {
       const locale = Object.keys(state.page.paths)[0] || state.page.locale;
-      updatePage({ paths: { [locale]: fieldInput } });
+      // Sanitize slug: lowercase, replace spaces with hyphens, strip invalid chars
+      const sanitized = fieldInput
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-/]/g, '')
+        .replace(/^\/+|\/+$/g, '');
+      updatePage({ paths: { ...state.page.paths, [locale]: sanitized } });
     }
 
     setEditingState({ step: 'idle' });
@@ -60,6 +67,7 @@ export function PageSettingsPanel() {
     if (editingState.step !== 'editing' || !editingState.field || editingState.field === 'slug') return;
 
     setIsAILoading(true);
+    setAiError(null);
     try {
       const content = fieldInput || (editingState.field === 'metaTitle' ? state.page.title : '');
       const response = await fetch('/api/admin/ai', {
@@ -77,12 +85,12 @@ export function PageSettingsPanel() {
 
       const data = await response.json();
       if (data.error) {
-        alert(data.error);
+        setAiError(data.error);
       } else if (data.result) {
         setFieldInput(data.result);
       }
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'AI request failed');
+      setAiError(error instanceof Error ? error.message : 'AI request failed');
     } finally {
       setIsAILoading(false);
     }
@@ -140,6 +148,10 @@ export function PageSettingsPanel() {
             Cancel
           </Button>
         </div>
+
+        {aiError && (
+          <p className="text-sm text-red-600 mt-2">{aiError}</p>
+        )}
 
         {editingState.field !== 'slug' && (
           <button

@@ -25,8 +25,11 @@ export function PageBlocksEditor({ pageId, initialBlocks }: PageBlocksEditorProp
       props: blockMeta.defaultProps,
     };
 
-    const updatedBlocks = [...blocks, newBlock];
-    setBlocks(updatedBlocks);
+    let updatedBlocks: BlockInstance[] = [];
+    setBlocks(prev => {
+      updatedBlocks = [...prev, newBlock];
+      return updatedBlocks;
+    });
     setShowPicker(false);
     setIsSaving(true);
 
@@ -41,22 +44,28 @@ export function PageBlocksEditor({ pageId, initialBlocks }: PageBlocksEditorProp
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to save');
+        let message = 'Failed to save';
+        try { const data = await response.json(); message = data.error || message; } catch {}
+        throw new Error(message);
       }
 
       router.refresh();
     } catch (error) {
       console.error('Error adding block:', error);
-      setBlocks(blocks);
+      setBlocks(prev => prev.filter(b => b.id !== newBlock.id));
     } finally {
       setIsSaving(false);
     }
-  }, [blocks, pageId, router]);
+  }, [pageId, router]);
 
   const handleDeleteBlock = useCallback(async (blockId: string) => {
-    const updatedBlocks = blocks.filter((b) => b.id !== blockId);
-    setBlocks(updatedBlocks);
+    let previousBlocks: BlockInstance[] = [];
+    let updatedBlocks: BlockInstance[] = [];
+    setBlocks(prev => {
+      previousBlocks = prev;
+      updatedBlocks = prev.filter((b) => b.id !== blockId);
+      return updatedBlocks;
+    });
     setIsSaving(true);
 
     try {
@@ -70,18 +79,19 @@ export function PageBlocksEditor({ pageId, initialBlocks }: PageBlocksEditorProp
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to save');
+        let message = 'Failed to save';
+        try { const data = await response.json(); message = data.error || message; } catch {}
+        throw new Error(message);
       }
 
       router.refresh();
     } catch (error) {
       console.error('Error removing block:', error);
-      setBlocks(blocks);
+      setBlocks(previousBlocks);
     } finally {
       setIsSaving(false);
     }
-  }, [blocks, pageId, router]);
+  }, [pageId, router]);
 
   return (
     <>

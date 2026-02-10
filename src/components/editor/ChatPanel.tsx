@@ -36,8 +36,14 @@ export function ChatPanel() {
 
   // Fetch block metadata when a new block type is selected
   useEffect(() => {
-    if (!selectedBlock) return;
-    if (metadataCache.has(selectedBlock.type)) return;
+    if (!selectedBlock) {
+      setIsMetadataLoading(false);
+      return;
+    }
+    if (metadataCache.has(selectedBlock.type)) {
+      setIsMetadataLoading(false);
+      return;
+    }
     // Skip if we already have an in-flight fetch (but allow retry on re-select)
     if (metadataFetchedRef.current.has(selectedBlock.type)) return;
     metadataFetchedRef.current.add(selectedBlock.type);
@@ -70,6 +76,23 @@ export function ChatPanel() {
 
     return () => { cancelled = true; };
   }, [selectedBlock?.type, metadataCache]);
+
+  // Clean up conversations for deleted blocks
+  useEffect(() => {
+    const blockIds = new Set(state.page.blocks.map(b => b.id));
+    setConversations(prev => {
+      let changed = false;
+      for (const key of prev.keys()) {
+        if (!blockIds.has(key)) { changed = true; break; }
+      }
+      if (!changed) return prev;
+      const next = new Map(prev);
+      for (const key of next.keys()) {
+        if (!blockIds.has(key)) next.delete(key);
+      }
+      return next;
+    });
+  }, [state.page.blocks]);
 
   // Create or retrieve conversation when block changes
   useEffect(() => {
@@ -362,6 +385,7 @@ export function ChatPanel() {
           <button
             onClick={() => selectBlock(null)}
             className="p-1 text-gray-400 hover:text-gray-600 rounded"
+            aria-label="Close panel"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

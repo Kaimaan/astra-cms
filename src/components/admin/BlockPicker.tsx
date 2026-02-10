@@ -53,9 +53,12 @@ export function BlockPicker({ isOpen, onClose, onSelect }: BlockPickerProps) {
     setIsLoading(true);
 
     fetch('/api/admin/blocks')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
-        if (!cancelled) setBlocks(data);
+        if (!cancelled && Array.isArray(data)) setBlocks(data);
       })
       .catch(console.error)
       .finally(() => {

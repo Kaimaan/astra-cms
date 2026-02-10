@@ -74,60 +74,34 @@ export default async function PageEditorPage({ params }: PageEditorProps) {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Page Settings */}
+          {/* Page Settings (read-only — use Edit Mode for changes) */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Settings</h2>
-            <div className="space-y-4">
+            <dl className="space-y-3 text-sm">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  defaultValue={page.title}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                />
+                <dt className="text-gray-500">Title</dt>
+                <dd className="text-gray-900 font-medium mt-0.5">{page.title}</dd>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  URL Path
-                </label>
-                <input
-                  type="text"
-                  defaultValue={primaryPath}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                />
+                <dt className="text-gray-500">URL Path</dt>
+                <dd className="text-gray-900 font-mono mt-0.5">/{primaryPath}</dd>
               </div>
-            </div>
+            </dl>
           </div>
 
-          {/* SEO */}
+          {/* SEO (read-only) */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">SEO</h2>
-            <div className="space-y-4">
+            <dl className="space-y-3 text-sm">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Meta Title
-                </label>
-                <input
-                  type="text"
-                  defaultValue={page.seo?.metaTitle || ''}
-                  placeholder="Page title for search engines"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                />
+                <dt className="text-gray-500">Meta Title</dt>
+                <dd className="text-gray-900 mt-0.5">{page.seo?.metaTitle || <span className="text-gray-400 italic">Not set</span>}</dd>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Meta Description
-                </label>
-                <textarea
-                  rows={3}
-                  defaultValue={page.seo?.metaDescription || ''}
-                  placeholder="Brief description for search results"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                />
+                <dt className="text-gray-500">Meta Description</dt>
+                <dd className="text-gray-900 mt-0.5">{page.seo?.metaDescription || <span className="text-gray-400 italic">Not set</span>}</dd>
               </div>
-            </div>
+            </dl>
           </div>
 
           {/* Page Info */}

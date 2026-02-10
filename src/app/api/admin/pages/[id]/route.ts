@@ -89,8 +89,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Extract updates and change description
-    const { changeDescription, ...updates } = body;
+    // Whitelist allowed fields
+    const { changeDescription, title, paths, blocks, seo, status } = body;
+    const updates: Record<string, unknown> = {};
+    if (title !== undefined) updates.title = title;
+    if (paths !== undefined) updates.paths = paths;
+    if (blocks !== undefined) updates.blocks = blocks;
+    if (seo !== undefined) updates.seo = seo;
+    if (status !== undefined) updates.status = status;
 
     // Update the page (provider auto-creates revision)
     const updatedPage = await provider.updatePage(id, updates, changeDescription);

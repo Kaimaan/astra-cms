@@ -126,7 +126,9 @@ export function PagesListClient({ initialPages }: PagesListClientProps) {
     return Object.values(paths)[0] || '';
   };
 
-  const selectedTargetPage = redirectTarget ? pages.find(p => p.id === redirectTarget) : null;
+  const selectedTargetPage = redirectTarget
+    ? (pages.find(p => p.id === redirectTarget) || searchResults.find(p => p.id === redirectTarget) || null)
+    : null;
 
   return (
     <div className="px-4 py-8 sm:px-6 lg:px-8">

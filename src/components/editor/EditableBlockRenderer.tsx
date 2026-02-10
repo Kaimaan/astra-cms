@@ -284,13 +284,25 @@ function BlockPreviewContent({ type, props, info }: BlockPreviewContentProps) {
   }
 }
 
+// Validate URL for safe use in CSS (only allow http(s) and relative paths starting with /)
+function isSafeCssUrl(url: string): boolean {
+  if (url.startsWith('/') && !url.startsWith('//')) return true;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
 // Hero block preview
 function HeroPreview({ props }: { props: Record<string, unknown> }) {
   const title = (props.title as string) || 'Hero Title';
   const subtitle = (props.subtitle as string) || '';
   const description = (props.description as string) || '';
   const alignment = (props.alignment as string) || 'center';
-  const backgroundImage = props.backgroundImage as string | undefined;
+  const rawBgImage = props.backgroundImage as string | undefined;
+  const backgroundImage = rawBgImage && isSafeCssUrl(rawBgImage) ? rawBgImage : undefined;
   const cta = props.cta as { label?: string; href?: string } | undefined;
   const secondaryCta = props.secondaryCta as { label?: string; href?: string } | undefined;
 
@@ -304,7 +316,7 @@ function HeroPreview({ props }: { props: Record<string, unknown> }) {
     <section
       className="relative py-24 px-6 bg-gray-900"
       style={backgroundImage ? {
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${backgroundImage})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("${encodeURI(backgroundImage)}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       } : undefined}

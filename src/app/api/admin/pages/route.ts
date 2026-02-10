@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       id: page.id,
       title: page.title,
       paths: page.paths,
+      locale: page.locale,
       status: page.status,
       updatedAt: page.updatedAt.toISOString()
     }));
@@ -62,6 +63,14 @@ export async function POST(request: NextRequest) {
 
     // Normalize path: strip leading/trailing slashes
     const normalizedPath = path.replace(/^\/+|\/+$/g, '');
+
+    // Validate path format (allow empty for homepage, alphanumeric with hyphens/slashes)
+    if (normalizedPath && !/^[a-zA-Z0-9][a-zA-Z0-9\-/]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/.test(normalizedPath)) {
+      return NextResponse.json(
+        { error: 'Invalid path. Use only letters, numbers, hyphens, and forward slashes.' },
+        { status: 400 }
+      );
+    }
 
     // Check for duplicate paths
     const provider = getContentProvider();

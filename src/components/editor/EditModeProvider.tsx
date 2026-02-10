@@ -13,6 +13,7 @@ import {
   useReducer,
   useCallback,
   useMemo,
+  useRef,
   type ReactNode,
 } from 'react';
 import type { Page } from '@/core/content/types';
@@ -43,6 +44,7 @@ type EditModeAction =
   | { type: 'SAVE_SUCCESS'; page: Page }
   | { type: 'SAVE_ERROR'; error: string }
   | { type: 'SET_EDIT_MODE'; mode: 'properties' | 'ai' }
+  | { type: 'SET_PAGE_STATUS'; status: Page['status'] }
   | { type: 'DISCARD' };
 
 interface EditModeContextValue {
@@ -55,6 +57,7 @@ interface EditModeContextValue {
   deleteBlock: (blockId: string) => void;
   reorderBlocks: (fromIndex: number, toIndex: number) => void;
   updatePage: (updates: Partial<Page>) => void;
+  setPageStatus: (status: Page['status']) => void;
   save: () => Promise<void>;
   discard: () => void;
 }
@@ -83,7 +86,11 @@ function editModeReducer(state: EditModeState, action: EditModeAction): EditMode
       const blocks = [...state.page.blocks];
       if (action.afterBlockId) {
         const index = blocks.findIndex((b) => b.id === action.afterBlockId);
-        blocks.splice(index + 1, 0, action.block);
+        if (index === -1) {
+          blocks.push(action.block);
+        } else {
+          blocks.splice(index + 1, 0, action.block);
+        }
       } else {
         blocks.push(action.block);
       }
@@ -107,9 +114,13 @@ function editModeReducer(state: EditModeState, action: EditModeAction): EditMode
     }
 
     case 'REORDER_BLOCKS': {
+      const { fromIndex, toIndex } = action;
+      if (fromIndex < 0 || fromIndex >= state.page.blocks.length || toIndex < 0 || toIndex >= state.page.blocks.length) {
+        return state;
+      }
       const blocks = [...state.page.blocks];
-      const [moved] = blocks.splice(action.fromIndex, 1);
-      blocks.splice(action.toIndex, 0, moved);
+      const [moved] = blocks.splice(fromIndex, 1);
+      blocks.splice(toIndex, 0, moved);
       return {
         ...state,
         page: { ...state.page, blocks },
@@ -141,6 +152,13 @@ function editModeReducer(state: EditModeState, action: EditModeAction): EditMode
 
     case 'SET_EDIT_MODE':
       return { ...state, editMode: action.mode };
+
+    case 'SET_PAGE_STATUS':
+      return {
+        ...state,
+        page: { ...state.page, status: action.status },
+        originalPage: { ...state.originalPage, status: action.status },
+      };
 
     case 'DISCARD':
       return {
@@ -215,24 +233,33 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
     dispatch({ type: 'UPDATE_PAGE', updates });
   }, []);
 
+  const setPageStatus = useCallback((status: Page['status']) => {
+    dispatch({ type: 'SET_PAGE_STATUS', status });
+  }, []);
+
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   const save = useCallback(async () => {
     dispatch({ type: 'SAVE_START' });
 
     try {
-      const response = await fetch(`/api/admin/pages/${encodeURIComponent(state.page.id)}`, {
+      const currentPage = stateRef.current.page;
+      const response = await fetch(`/api/admin/pages/${encodeURIComponent(currentPage.id)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          blocks: state.page.blocks,
-          title: state.page.title,
-          seo: state.page.seo,
+          blocks: currentPage.blocks,
+          title: currentPage.title,
+          seo: currentPage.seo,
           changeDescription: 'Edited via chat editor',
         }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to save');
+        let message = 'Failed to save';
+        try { const err = await response.json(); message = err.error || message; } catch {}
+        throw new Error(message);
       }
 
       const updatedPage = await response.json();
@@ -243,7 +270,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
         error: error instanceof Error ? error.message : 'Failed to save',
       });
     }
-  }, [state.page]);
+  }, []);
 
   const discard = useCallback(() => {
     dispatch({ type: 'DISCARD' });
@@ -260,6 +287,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
       deleteBlock,
       reorderBlocks,
       updatePage,
+      setPageStatus,
       save,
       discard,
     }),
@@ -273,6 +301,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
       deleteBlock,
       reorderBlocks,
       updatePage,
+      setPageStatus,
       save,
       discard,
     ]

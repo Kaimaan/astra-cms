@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
 
+function isValidId(id: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(id);
+}
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
@@ -8,10 +12,13 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    if (!isValidId(id)) {
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
+    }
     const body = await request.json();
     const { revisionId } = body;
 
-    if (!revisionId) {
+    if (!revisionId || typeof revisionId !== 'string' || !isValidId(revisionId)) {
       return NextResponse.json(
         { error: 'Missing revisionId in request body' },
         { status: 400 }

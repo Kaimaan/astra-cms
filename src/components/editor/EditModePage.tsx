@@ -33,16 +33,11 @@ export function EditModePage({ page, headerConfig, footerConfig }: EditModePageP
 }
 
 function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderConfig | null; footerConfig?: FooterConfig | null }) {
-  const { state, save, discard, selectBlock } = useEditMode();
+  const { state, save, discard, selectBlock, setPageStatus } = useEditMode();
   const { isDirty, isSaving, error } = state;
+  const pageStatus = state.page.status;
   const [isPublishing, setIsPublishing] = useState(false);
-  const [pageStatus, setPageStatus] = useState(state.page.status);
   const [publishError, setPublishError] = useState<string | null>(null);
-
-  // Sync pageStatus when state.page.status changes (e.g. after save)
-  useEffect(() => {
-    setPageStatus(state.page.status);
-  }, [state.page.status]);
 
   const handlePublishToggle = useCallback(async () => {
     setIsPublishing(true);
@@ -57,15 +52,16 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
         const updated = await response.json();
         setPageStatus(updated.status);
       } else {
-        const data = await response.json();
-        setPublishError(data.error || 'Failed to update page status');
+        let message = 'Failed to update page status';
+        try { const data = await response.json(); message = data.error || message; } catch {}
+        setPublishError(message);
       }
     } catch {
       setPublishError('Failed to update page status');
     } finally {
       setIsPublishing(false);
     }
-  }, [pageStatus, state.page.id]);
+  }, [pageStatus, state.page.id, setPageStatus]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -168,7 +164,9 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
             <Button
               variant="ghost"
               size="sm"
-              onClick={discard}
+              onClick={() => {
+                if (window.confirm('Discard all unsaved changes?')) discard();
+              }}
               disabled={!isDirty || isSaving}
             >
               Discard
