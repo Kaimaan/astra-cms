@@ -3,6 +3,7 @@ import { getContentProvider } from '@/infrastructure';
 import { validateBody } from '@/lib/validation/validate';
 import { createPageSchema } from '@/lib/validation/schemas/page-schemas';
 import { withAuth } from '@/core/auth/middleware';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 import config from '../../../../../astra.config';
 
 export const GET = withAuth('pages:read', async (request, _auth) => {
@@ -37,11 +38,7 @@ export const GET = withAuth('pages:read', async (request, _auth) => {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error fetching pages:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch pages' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch pages', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 
@@ -58,10 +55,7 @@ export const POST = withAuth('pages:create', async (request, _auth) => {
       Object.values(p.paths).some(existing => existing === normalizedPath)
     );
     if (duplicate) {
-      return NextResponse.json(
-        { error: `A page with the path "/${normalizedPath}" already exists` },
-        { status: 409 }
-      );
+      return apiError(`A page with the path "/${normalizedPath}" already exists`, ErrorCode.CONFLICT, 409);
     }
 
     const locale = config.i18n.defaultLocale;
@@ -76,10 +70,6 @@ export const POST = withAuth('pages:create', async (request, _auth) => {
 
     return NextResponse.json(newPage, { status: 201 });
   } catch (error) {
-    console.error('Error creating page:', error);
-    return NextResponse.json(
-      { error: 'Failed to create page' },
-      { status: 500 }
-    );
+    return apiError('Failed to create page', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });

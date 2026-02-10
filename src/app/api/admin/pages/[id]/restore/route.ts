@@ -3,6 +3,7 @@ import { getContentProvider } from '@/infrastructure';
 import { validateId, validateBody } from '@/lib/validation/validate';
 import { restoreRevisionSchema } from '@/lib/validation/schemas/page-schemas';
 import { withAuthParams } from '@/core/auth/middleware';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 
 export const POST = withAuthParams('pages:update', async (request, { params }, _auth) => {
   try {
@@ -24,14 +25,13 @@ export const POST = withAuthParams('pages:update', async (request, { params }, _
       page: restoredPage,
     });
   } catch (error) {
-    console.error('Error restoring revision:', error);
-
     const message = error instanceof Error ? error.message : 'Failed to restore revision';
-    const status = message.includes('not found') ? 404 : 500;
-
-    return NextResponse.json(
-      { error: message },
-      { status }
+    const isNotFound = message.includes('not found');
+    return apiError(
+      message,
+      isNotFound ? ErrorCode.NOT_FOUND : ErrorCode.INTERNAL_ERROR,
+      isNotFound ? 404 : 500,
+      error
     );
   }
 });

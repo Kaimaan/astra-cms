@@ -5,6 +5,7 @@ import { getContentProvider } from '@/infrastructure';
 import { validateId, validateBody } from '@/lib/validation/validate';
 import { updateAssetSchema } from '@/lib/validation/schemas/asset-schemas';
 import { withAuthParams } from '@/core/auth/middleware';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
@@ -16,13 +17,12 @@ export const GET = withAuthParams('assets:read', async (_request, { params }, _a
     const asset = await provider.getAsset(id);
 
     if (!asset) {
-      return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+      return apiError('Asset not found', ErrorCode.NOT_FOUND, 404);
     }
 
     return NextResponse.json(asset);
   } catch (error) {
-    console.error('Error fetching asset:', error);
-    return NextResponse.json({ error: 'Failed to fetch asset' }, { status: 500 });
+    return apiError('Failed to fetch asset', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 
@@ -41,8 +41,7 @@ export const PATCH = withAuthParams('assets:update', async (request, { params },
 
     return NextResponse.json(asset);
   } catch (error) {
-    console.error('Error updating asset:', error);
-    return NextResponse.json({ error: 'Failed to update asset' }, { status: 500 });
+    return apiError('Failed to update asset', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 
@@ -55,7 +54,7 @@ export const DELETE = withAuthParams('assets:delete', async (_request, { params 
     // Get asset to find file path
     const asset = await provider.getAsset(id);
     if (!asset) {
-      return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+      return apiError('Asset not found', ErrorCode.NOT_FOUND, 404);
     }
 
     // Delete file from disk
@@ -73,7 +72,6 @@ export const DELETE = withAuthParams('assets:delete', async (_request, { params 
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting asset:', error);
-    return NextResponse.json({ error: 'Failed to delete asset' }, { status: 500 });
+    return apiError('Failed to delete asset', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });

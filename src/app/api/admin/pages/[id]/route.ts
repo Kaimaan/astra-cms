@@ -4,6 +4,7 @@ import { validateId, validateBody } from '@/lib/validation/validate';
 import { updatePageSchema } from '@/lib/validation/schemas/page-schemas';
 import { withAuthParams } from '@/core/auth/middleware';
 import { sanitizeBlockContent } from '@/lib/sanitize';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 
 export const DELETE = withAuthParams('pages:delete', async (request, { params }, _auth) => {
   try {
@@ -19,10 +20,7 @@ export const DELETE = withAuthParams('pages:delete', async (request, { params },
     // Verify page exists
     const page = await provider.getPage(id);
     if (!page) {
-      return NextResponse.json(
-        { error: 'Page not found' },
-        { status: 404 }
-      );
+      return apiError('Page not found', ErrorCode.NOT_FOUND, 404);
     }
 
     await provider.deletePage(id, redirectToId);
@@ -32,11 +30,7 @@ export const DELETE = withAuthParams('pages:delete', async (request, { params },
       redirectAdded: !!redirectToId
     });
   } catch (error) {
-    console.error('Error deleting page:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete page' },
-      { status: 500 }
-    );
+    return apiError('Failed to delete page', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 
@@ -50,19 +44,12 @@ export const GET = withAuthParams('pages:read', async (_request, { params }, _au
     const page = await provider.getPage(id);
 
     if (!page) {
-      return NextResponse.json(
-        { error: 'Page not found' },
-        { status: 404 }
-      );
+      return apiError('Page not found', ErrorCode.NOT_FOUND, 404);
     }
 
     return NextResponse.json(page);
   } catch (error) {
-    console.error('Error fetching page:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch page' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch page', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 
@@ -81,10 +68,7 @@ export const PATCH = withAuthParams('pages:update', async (request, { params }, 
     // Verify page exists
     const existingPage = await provider.getPage(id);
     if (!existingPage) {
-      return NextResponse.json(
-        { error: 'Page not found' },
-        { status: 404 }
-      );
+      return apiError('Page not found', ErrorCode.NOT_FOUND, 404);
     }
 
     const updates: Record<string, unknown> = {};
@@ -99,10 +83,6 @@ export const PATCH = withAuthParams('pages:update', async (request, { params }, 
 
     return NextResponse.json(updatedPage);
   } catch (error) {
-    console.error('Error updating page:', error);
-    return NextResponse.json(
-      { error: 'Failed to update page' },
-      { status: 500 }
-    );
+    return apiError('Failed to update page', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });

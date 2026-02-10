@@ -119,6 +119,10 @@ async function callGemini(
   return { text, usage };
 }
 
+// NOTE: This route returns errors embedded in the EditBlockResponse shape
+// ({ updatedProps, explanation, error }) rather than the standard { error, code }
+// format, because the frontend (ChatPanel) reads both success and error fields
+// from the same response type. See: src/lib/api-errors.ts for the standard pattern.
 export const POST = withAuth('pages:update', async (request, _auth): Promise<NextResponse> => {
   try {
     const apiKey = getApiKey();

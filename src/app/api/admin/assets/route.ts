@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { getContentProvider } from '@/infrastructure';
 import { withAuth } from '@/core/auth/middleware';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
@@ -27,8 +28,7 @@ export const GET = withAuth('assets:read', async (_request, _auth) => {
     const assets = await provider.getAssets({ sortBy: 'createdAt', sortOrder: 'desc' });
     return NextResponse.json(assets);
   } catch (error) {
-    console.error('Error fetching assets:', error);
-    return NextResponse.json({ error: 'Failed to fetch assets' }, { status: 500 });
+    return apiError('Failed to fetch assets', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 
@@ -39,7 +39,7 @@ export const POST = withAuth('assets:create', async (request, _auth) => {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return apiError('No file provided', ErrorCode.VALIDATION_ERROR, 400);
     }
 
     // Determine type subdirectory
@@ -74,7 +74,6 @@ export const POST = withAuth('assets:create', async (request, _auth) => {
 
     return NextResponse.json(updatedAsset);
   } catch (error) {
-    console.error('Error uploading asset:', error);
-    return NextResponse.json({ error: 'Failed to upload asset' }, { status: 500 });
+    return apiError('Failed to upload asset', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });

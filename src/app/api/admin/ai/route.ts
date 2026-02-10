@@ -6,6 +6,7 @@ import { GEMINI_MODEL, ANTHROPIC_MODEL } from '@/infrastructure/ai';
 import { validateBody } from '@/lib/validation/validate';
 import { aiActionSchema } from '@/lib/validation/schemas/ai-schemas';
 import { withAuth } from '@/core/auth/middleware';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 import type {
   AIGenerateRequest,
   AIImproveRequest,
@@ -55,13 +56,10 @@ async function logUsage(
 export const POST = withAuth('pages:update', async (request, _auth) => {
   try {
     if (!isAIEnabled()) {
-      return NextResponse.json(
-        {
-          error: 'AI not configured',
-          message:
-            'Add GEMINI_API_KEY to your .env.local file to enable AI features.',
-        },
-        { status: 503 }
+      return apiError(
+        'AI not configured. Add GEMINI_API_KEY to your .env.local file to enable AI features.',
+        ErrorCode.SERVICE_UNAVAILABLE,
+        503
       );
     }
 
@@ -96,11 +94,7 @@ export const POST = withAuth('pages:update', async (request, _auth) => {
       }
     }
   } catch (error) {
-    console.error('AI API error:', error);
-    return NextResponse.json(
-      { error: 'AI operation failed', message: String(error) },
-      { status: 500 }
-    );
+    return apiError('AI operation failed', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
 

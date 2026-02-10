@@ -71,7 +71,7 @@ export function AIAssistant({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'AI request failed');
+        throw new Error(data.error || 'AI request failed');
       }
 
       return await response.json();

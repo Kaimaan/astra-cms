@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUsageProvider } from '@/core/ai/usage-provider';
 import { withAuth } from '@/core/auth/middleware';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 
 // GET /api/admin/ai/usage - Get usage data
 export const GET = withAuth('site:read', async (request, _auth) => {
   try {
     const usageProvider = getUsageProvider();
     if (!usageProvider) {
-      return NextResponse.json(
-        { error: 'Usage tracking not configured' },
-        { status: 503 }
-      );
+      return apiError('Usage tracking not configured', ErrorCode.SERVICE_UNAVAILABLE, 503);
     }
 
     const searchParams = request.nextUrl.searchParams;
@@ -31,10 +29,6 @@ export const GET = withAuth('site:read', async (request, _auth) => {
 
     return NextResponse.json({ records, summary });
   } catch (error) {
-    console.error('Usage API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch usage data', message: String(error) },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch usage data', ErrorCode.INTERNAL_ERROR, 500, error);
   }
 });
