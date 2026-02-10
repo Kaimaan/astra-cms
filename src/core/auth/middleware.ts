@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthProvider, isAuthEnabled } from './provider';
 import { canAccess } from './types';
 import type { User } from './types';
+import { apiError, ErrorCode } from '@/lib/api-errors';
 
 /**
  * Authenticated request context passed to protected handlers.
@@ -52,17 +53,11 @@ async function authenticate(
   try {
     user = await provider.verifyRequest(request);
   } catch {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
+    return apiError('Authentication required', ErrorCode.UNAUTHORIZED, 401);
   }
 
   if (!user) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
+    return apiError('Authentication required', ErrorCode.UNAUTHORIZED, 401);
   }
 
   // Check permission
@@ -74,10 +69,7 @@ async function authenticate(
       action as 'read' | 'create' | 'update' | 'delete' | 'publish' | 'manage'
     )
   ) {
-    return NextResponse.json(
-      { error: 'Insufficient permissions' },
-      { status: 403 }
-    );
+    return apiError('Insufficient permissions', ErrorCode.FORBIDDEN, 403);
   }
 
   return { user };

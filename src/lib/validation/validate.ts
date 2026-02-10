@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z, type ZodSchema } from 'zod';
+import { ErrorCode } from '@/lib/api-errors';
 
 export interface ValidationDetail {
   field: string;
@@ -32,7 +33,7 @@ export async function validateBody<T>(
     return {
       success: false,
       response: NextResponse.json(
-        { error: 'Invalid JSON in request body' },
+        { error: 'Invalid JSON in request body', code: ErrorCode.VALIDATION_ERROR },
         { status: 400 },
       ),
     };
@@ -46,6 +47,7 @@ export async function validateBody<T>(
       response: NextResponse.json(
         {
           error: 'Validation failed',
+          code: ErrorCode.VALIDATION_ERROR,
           details: formatZodErrors(result.error),
         },
         { status: 400 },
@@ -65,7 +67,7 @@ export const idParam = z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid ID format')
 export function validateId(id: string): NextResponse | null {
   const result = idParam.safeParse(id);
   if (!result.success) {
-    return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid ID format', code: ErrorCode.VALIDATION_ERROR }, { status: 400 });
   }
   return null;
 }
