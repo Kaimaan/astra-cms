@@ -61,7 +61,14 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
     if (result?.page) {
       // Edit mode: render with editor wrapper
       if (isEditMode) {
-        return <EditModePage page={result.page} />;
+        const site = await provider.getSite();
+        return (
+          <EditModePage
+            page={result.page}
+            headerConfig={site?.globals?.header}
+            footerConfig={site?.globals?.footer}
+          />
+        );
       }
 
       // View mode: render blocks normally

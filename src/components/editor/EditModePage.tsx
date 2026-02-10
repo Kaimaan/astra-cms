@@ -16,21 +16,23 @@ import { ChatPanel } from './ChatPanel';
 import { BlockPropertiesPanel } from './BlockPropertiesPanel';
 import { PageSettingsPanel } from './PageSettingsPanel';
 import { Button } from '@/components/ui/Button';
-import type { Page } from '@/core/content/types';
+import type { Page, HeaderConfig, FooterConfig } from '@/core/content/types';
 
 interface EditModePageProps {
   page: Page;
+  headerConfig?: HeaderConfig | null;
+  footerConfig?: FooterConfig | null;
 }
 
-export function EditModePage({ page }: EditModePageProps) {
+export function EditModePage({ page, headerConfig, footerConfig }: EditModePageProps) {
   return (
     <EditModeProvider page={page}>
-      <EditModeLayout />
+      <EditModeLayout headerConfig={headerConfig} footerConfig={footerConfig} />
     </EditModeProvider>
   );
 }
 
-function EditModeLayout() {
+function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderConfig | null; footerConfig?: FooterConfig | null }) {
   const { state, save, discard, selectBlock } = useEditMode();
   const { isDirty, isSaving, error } = state;
   const [isPublishing, setIsPublishing] = useState(false);
@@ -194,7 +196,9 @@ function EditModeLayout() {
         {/* Page preview */}
         <div className="flex-1 overflow-y-auto">
           <div className="bg-white min-h-full">
+            {headerConfig && <HeaderPreview config={headerConfig} />}
             <EditablePageContent />
+            {footerConfig && <FooterPreview config={footerConfig} />}
           </div>
         </div>
 
@@ -242,6 +246,94 @@ function EditablePageContent() {
   return (
     <div onClick={handleClick} className="cursor-pointer">
       <EditableBlockRenderer />
+    </div>
+  );
+}
+
+/**
+ * Non-interactive header preview for edit mode
+ */
+function HeaderPreview({ config }: { config: HeaderConfig }) {
+  const { logo, navigation, cta } = config;
+
+  return (
+    <div className="pointer-events-none opacity-60">
+      <header className="w-full bg-white border-b border-gray-200">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex-shrink-0">
+              <div className="flex items-center gap-2 font-semibold text-gray-900">
+                {logo?.src ? (
+                  <img src={logo.src} alt={logo?.text || 'Logo'} className="h-8 w-auto" />
+                ) : (
+                  <span className="text-xl">{logo?.text}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-8">
+              {navigation?.map((item) => (
+                <span key={item.href} className="text-sm font-medium text-gray-600">
+                  {item.label}
+                </span>
+              ))}
+              {cta && (
+                <span className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium text-white bg-primary-600 rounded-lg">
+                  {cta.label}
+                </span>
+              )}
+            </div>
+          </div>
+        </nav>
+      </header>
+    </div>
+  );
+}
+
+/**
+ * Non-interactive footer preview for edit mode
+ */
+function FooterPreview({ config }: { config: FooterConfig }) {
+  const { logo, description, linkGroups, copyright } = config;
+
+  return (
+    <div className="pointer-events-none opacity-60">
+      <footer className="bg-gray-900 text-gray-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              {logo && (
+                <div className="flex items-center gap-2 mb-4">
+                  {logo.src ? (
+                    <img src={logo.src} alt={logo.text || 'Logo'} className="h-8 w-auto" />
+                  ) : (
+                    <span className="text-xl font-semibold text-white">{logo.text}</span>
+                  )}
+                </div>
+              )}
+              {description && <p className="text-sm text-gray-400 mb-6">{description}</p>}
+            </div>
+            {linkGroups?.map((group) => (
+              <div key={group.title}>
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                  {group.title}
+                </h3>
+                <ul className="space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.href}>
+                      <span className="text-sm text-gray-400">{link.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          {copyright && (
+            <div className="mt-12 pt-8 border-t border-gray-800">
+              <p className="text-sm text-gray-500 text-center">{copyright}</p>
+            </div>
+          )}
+        </div>
+      </footer>
     </div>
   );
 }
