@@ -1,5 +1,6 @@
 'use client';
 
+import DOMPurify from 'isomorphic-dompurify';
 import type { BlockRendererProps } from '@/core/blocks/types';
 import type { RichTextProps } from './index';
 import { cn } from '@/lib/cn';
@@ -24,7 +25,7 @@ export function RichTextRenderer({ props, editMode }: BlockRendererProps<RichTex
           'prose-img:rounded-lg',
           maxWidthClasses[maxWidth || 'md']
         )}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
       />
     </section>
   );

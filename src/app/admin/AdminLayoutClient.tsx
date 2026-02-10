@@ -345,7 +345,7 @@ function AdminHeader() {
         {/* Draft pages indicator */}
         {draftCount > 0 && (
           <Link
-            href="/admin/pages?status=draft"
+            href="/admin/pages"
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

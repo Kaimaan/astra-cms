@@ -7,26 +7,27 @@
  * Renders inputs based on the prop types and calls updateBlock() on change.
  */
 
-import { useCallback } from 'react';
+import { useId, useRef } from 'react';
 import { useEditMode } from './EditModeProvider';
+
+const MAX_DEPTH = 4;
 
 export function BlockPropertiesPanel() {
   const { selectedBlock, updateBlock } = useEditMode();
+  const propsRef = useRef<Record<string, unknown>>({});
 
   if (!selectedBlock) return null;
 
   const blockId = selectedBlock.id;
   const props = (selectedBlock.props || {}) as Record<string, unknown>;
+  propsRef.current = props;
 
-  const handleChange = useCallback(
-    (key: string, value: unknown) => {
-      updateBlock(blockId, { ...props, [key]: value });
-    },
-    [blockId, props, updateBlock]
-  );
+  const handleChange = (key: string, value: unknown) => {
+    updateBlock(blockId, { ...propsRef.current, [key]: value });
+  };
 
   return (
-    <div className="p-4 overflow-y-auto h-full">
+    <div className="p-4 h-full">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-gray-900 capitalize">
           {selectedBlock.type.replace(/-/g, ' ')} Properties
@@ -58,15 +59,26 @@ function PropertyField({
   onChange: (value: unknown) => void;
   depth?: number;
 }) {
+  const fieldId = useId();
   const label = nameToLabel(name);
+
+  if (depth >= MAX_DEPTH) {
+    return (
+      <div>
+        <label className="block text-xs font-medium text-gray-400 mb-1">{label}</label>
+        <p className="text-xs text-gray-400 italic">Nested too deep to edit</p>
+      </div>
+    );
+  }
 
   if (typeof value === 'string') {
     const isLong = value.length > 80;
     return (
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+        <label htmlFor={fieldId} className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
         {isLong ? (
           <textarea
+            id={fieldId}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             rows={3}
@@ -74,6 +86,7 @@ function PropertyField({
           />
         ) : (
           <input
+            id={fieldId}
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -87,11 +100,15 @@ function PropertyField({
   if (typeof value === 'number') {
     return (
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+        <label htmlFor={fieldId} className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
         <input
+          id={fieldId}
           type="number"
           value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
+          onChange={(e) => {
+            const parsed = Number(e.target.value);
+            onChange(Number.isNaN(parsed) ? 0 : parsed);
+          }}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
         />
       </div>
@@ -101,9 +118,12 @@ function PropertyField({
   if (typeof value === 'boolean') {
     return (
       <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-gray-600">{label}</label>
+        <label htmlFor={fieldId} className="text-xs font-medium text-gray-600">{label}</label>
         <button
+          id={fieldId}
           type="button"
+          role="switch"
+          aria-checked={value}
           onClick={() => onChange(!value)}
           className={`relative w-10 h-5 rounded-full transition-colors ${value ? 'bg-primary-600' : 'bg-gray-300'}`}
         >
@@ -186,8 +206,9 @@ function PropertyField({
   // Fallback: render as text
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+      <label htmlFor={fieldId} className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
       <input
+        id={fieldId}
         type="text"
         value={String(value ?? '')}
         onChange={(e) => onChange(e.target.value)}

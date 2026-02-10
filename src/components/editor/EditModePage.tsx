@@ -9,7 +9,7 @@
  * - Chat panel for editing
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { EditModeProvider, useEditMode } from './EditModeProvider';
 import { EditableBlockRenderer } from './EditableBlockRenderer';
 import { ChatPanel } from './ChatPanel';
@@ -37,9 +37,16 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
   const { isDirty, isSaving, error } = state;
   const [isPublishing, setIsPublishing] = useState(false);
   const [pageStatus, setPageStatus] = useState(state.page.status);
+  const [publishError, setPublishError] = useState<string | null>(null);
+
+  // Sync pageStatus when state.page.status changes (e.g. after save)
+  useEffect(() => {
+    setPageStatus(state.page.status);
+  }, [state.page.status]);
 
   const handlePublishToggle = useCallback(async () => {
     setIsPublishing(true);
+    setPublishError(null);
     try {
       const method = pageStatus === 'published' ? 'DELETE' : 'POST';
       const response = await fetch(
@@ -51,10 +58,10 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
         setPageStatus(updated.status);
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to update page status');
+        setPublishError(data.error || 'Failed to update page status');
       }
     } catch {
-      alert('Failed to update page status');
+      setPublishError('Failed to update page status');
     } finally {
       setIsPublishing(false);
     }
@@ -70,8 +77,13 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
           save();
         }
       }
-      // Escape to deselect
+      // Escape to deselect (skip when typing in form inputs)
       if (e.key === 'Escape') {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+          (e.target as HTMLElement).blur();
+          return;
+        }
         selectBlock(null);
       }
     };
@@ -93,8 +105,13 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
+  const isDirtyRef = useRef(isDirty);
+  isDirtyRef.current = isDirty;
+
   const handleExitEditMode = useCallback(() => {
-    // Go back to where the user came from (usually admin pages list)
+    if (isDirtyRef.current && !window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+      return;
+    }
     if (window.history.length > 1) {
       window.history.back();
     } else {
@@ -144,8 +161,8 @@ function EditModeLayout({ headerConfig, footerConfig }: { headerConfig?: HeaderC
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            {error && (
-              <span className="text-sm text-red-600">{error}</span>
+            {(error || publishError) && (
+              <span className="text-sm text-red-600">{error || publishError}</span>
             )}
 
             <Button
@@ -257,7 +274,7 @@ function HeaderPreview({ config }: { config: HeaderConfig }) {
   const { logo, navigation, cta } = config;
 
   return (
-    <div className="pointer-events-none opacity-60">
+    <div className="pointer-events-none opacity-60" aria-hidden="true">
       <header className="w-full bg-white border-b border-gray-200">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -296,7 +313,7 @@ function FooterPreview({ config }: { config: FooterConfig }) {
   const { logo, description, linkGroups, copyright } = config;
 
   return (
-    <div className="pointer-events-none opacity-60">
+    <div className="pointer-events-none opacity-60" aria-hidden="true">
       <footer className="bg-gray-900 text-gray-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

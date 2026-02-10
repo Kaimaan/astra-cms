@@ -104,8 +104,6 @@ export function PageActions({ pageId, status, locale, primaryPath, revisions }: 
           </svg>
         </a>
 
-        <Button>Save Changes</Button>
-
         {currentStatus === 'published' ? (
           <Button
             variant="outline"

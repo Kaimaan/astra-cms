@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContentProvider } from '@/infrastructure';
 
+function isValidId(id: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(id);
+}
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
@@ -8,6 +12,9 @@ interface RouteParams {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    if (!isValidId(id)) {
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
+    }
     const { searchParams } = new URL(request.url);
     const redirectToId = searchParams.get('redirectTo') || undefined;
 
@@ -40,6 +47,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    if (!isValidId(id)) {
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
+    }
     const provider = getContentProvider();
     const page = await provider.getPage(id);
 
@@ -63,6 +73,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    if (!isValidId(id)) {
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
+    }
     const body = await request.json();
 
     const provider = getContentProvider();

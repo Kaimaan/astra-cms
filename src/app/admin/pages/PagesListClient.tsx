@@ -78,7 +78,7 @@ export function PagesListClient({ initialPages }: PagesListClientProps) {
 
       const response = await fetch(url, { method: 'DELETE' });
       if (response.ok) {
-        setPages(pages.filter(p => p.id !== showDeleteModal));
+        setPages(prev => prev.filter(p => p.id !== showDeleteModal));
         resetDeleteModal();
         router.refresh();
       } else {
@@ -93,14 +93,14 @@ export function PagesListClient({ initialPages }: PagesListClientProps) {
     }
   };
 
-  const handleTogglePublish = async (pageId: string, currentStatus: string) => {
+  const handleTogglePublish = async (pageId: string, currentStatus: PageData['status']) => {
     setPublishingId(pageId);
     try {
       const method = currentStatus === 'published' ? 'DELETE' : 'POST';
       const response = await fetch(`/api/admin/pages/${encodeURIComponent(pageId)}/publish`, { method });
       if (response.ok) {
         const updatedPage = await response.json();
-        setPages(pages.map(p => p.id === pageId ? { ...p, status: updatedPage.status } : p));
+        setPages(prev => prev.map(p => p.id === pageId ? { ...p, status: updatedPage.status } : p));
         router.refresh();
       } else {
         const data = await response.json();
@@ -222,7 +222,7 @@ export function PagesListClient({ initialPages }: PagesListClientProps) {
                         )}
                       </button>
                       <Link
-                        href={`/${getPageSlug(page.paths)}`}
+                        href={`/${page.locale}${getPageSlug(page.paths) ? `/${getPageSlug(page.paths)}` : ''}`}
                         target="_blank"
                         className="p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
                         title="View page"

@@ -11,10 +11,12 @@
  */
 
 import { useState, useCallback } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { useEditMode } from './EditModeProvider';
 import { BlockPicker } from '@/components/admin/BlockPicker';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
+import { generateBlockId } from '@/core/blocks/types';
 import * as LucideIcons from 'lucide-react';
 
 // Get a Lucide icon component by name
@@ -29,7 +31,7 @@ export function EditableBlockRenderer() {
 
   const handleBlockSelect = useCallback((blockMeta: { type: string; version: number; defaultProps: unknown }) => {
     const newBlock = {
-      id: `block_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`,
+      id: generateBlockId(),
       type: blockMeta.type,
       version: blockMeta.version,
       props: blockMeta.defaultProps,
@@ -142,6 +144,7 @@ function EditableBlockPreview({
           disabled={index === 0}
           className="p-1 bg-gray-900 hover:bg-gray-700 text-white rounded shadow-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           title="Move up"
+          aria-label="Move block up"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -155,6 +158,7 @@ function EditableBlockPreview({
           disabled={index === totalBlocks - 1}
           className="p-1 bg-gray-900 hover:bg-gray-700 text-white rounded shadow-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           title="Move down"
+          aria-label="Move block down"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -173,6 +177,7 @@ function EditableBlockPreview({
               : 'bg-gray-900 hover:bg-gray-700'
           )}
           title="Edit properties"
+          aria-label="Edit block properties"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -191,6 +196,7 @@ function EditableBlockPreview({
               : 'bg-gray-900 hover:bg-gray-700'
           )}
           title="Edit with AI"
+          aria-label="Edit block with AI"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -199,10 +205,12 @@ function EditableBlockPreview({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (!window.confirm('Delete this block?')) return;
             deleteBlock(blockId);
           }}
           className="p-1 bg-red-600 hover:bg-red-700 text-white rounded shadow-sm transition-colors"
           title="Delete block"
+          aria-label="Delete block"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -406,7 +414,7 @@ function RichTextPreview({ props }: { props: Record<string, unknown> }) {
 
   return (
     <section className="py-12 bg-white">
-      <div className="max-w-3xl mx-auto px-6 prose prose-gray" dangerouslySetInnerHTML={{ __html: content }} />
+      <div className="max-w-3xl mx-auto px-6 prose prose-gray" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />
     </section>
   );
 }

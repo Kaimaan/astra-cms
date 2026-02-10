@@ -219,7 +219,7 @@ export function EditModeProvider({ page, children }: EditModeProviderProps) {
     dispatch({ type: 'SAVE_START' });
 
     try {
-      const response = await fetch(`/api/admin/pages/${state.page.id}`, {
+      const response = await fetch(`/api/admin/pages/${encodeURIComponent(state.page.id)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
