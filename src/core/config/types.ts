@@ -5,6 +5,10 @@
  * NO Next.js imports - pure TypeScript
  */
 
+import type { HooksConfig } from '../hooks/types';
+
+export type { HooksConfig };
+
 // =============================================================================
 // SITE
 // =============================================================================
@@ -180,4 +184,5 @@ export interface AstraConfig {
   tokens: DesignTokens;
   navigation: NavigationConfig;
   deployment?: DeploymentConfig;
+  hooks?: HooksConfig;
 }

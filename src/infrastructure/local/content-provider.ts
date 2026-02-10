@@ -27,6 +27,7 @@ import type {
   RedirectResult,
   StaticPagePath,
 } from '@/core/content/provider';
+import { triggerHook } from '@/core/hooks';
 import type {
   Page,
   Site,
@@ -317,6 +318,7 @@ export class LocalContentProvider implements ContentProvider {
 
     const filePath = path.join(PAGES_DIR, `${updatedPage.id}.json`);
     await writeJsonFile(filePath, updatedPage);
+    await triggerHook('onPageUpdated', updatedPage, updates);
     return updatedPage;
   }
 
@@ -356,10 +358,11 @@ export class LocalContentProvider implements ContentProvider {
 
     const filePath = path.join(PAGES_DIR, `${page.id}.json`);
     await deleteFile(filePath);
+    await triggerHook('onPageDeleted', id);
   }
 
   async publishPage(id: string): Promise<Page> {
-    return this.updatePage(
+    const page = await this.updatePage(
       id,
       {
         status: 'published',
@@ -368,16 +371,20 @@ export class LocalContentProvider implements ContentProvider {
       },
       'Published'
     );
+    await triggerHook('onPagePublished', page);
+    return page;
   }
 
   async unpublishPage(id: string): Promise<Page> {
-    return this.updatePage(
+    const page = await this.updatePage(
       id,
       {
         status: 'draft',
       },
       'Unpublished'
     );
+    await triggerHook('onPageUnpublished', page);
+    return page;
   }
 
   async schedulePage(id: string, publishAt: Date): Promise<Page> {
@@ -760,6 +767,7 @@ export class LocalContentProvider implements ContentProvider {
     };
 
     await writeJsonFile(SITE_FILE, updatedSite);
+    await triggerHook('onConfigChanged', updatedSite);
     return updatedSite;
   }
 
@@ -826,6 +834,7 @@ export class LocalContentProvider implements ContentProvider {
     const assets = (await readJsonFile<Asset[]>(assetsFile)) || [];
     assets.push(asset);
     await writeJsonFile(assetsFile, assets);
+    await triggerHook('onAssetUploaded', asset);
 
     return asset;
   }
@@ -849,6 +858,7 @@ export class LocalContentProvider implements ContentProvider {
     const assets = (await readJsonFile<Asset[]>(assetsFile)) || [];
     const filtered = assets.filter((a) => a.id !== id);
     await writeJsonFile(assetsFile, filtered);
+    await triggerHook('onAssetDeleted', id);
   }
 
   // ---------------------------------------------------------------------------

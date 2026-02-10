@@ -38,7 +38,9 @@
 
 import { setContentProvider, getContentProvider } from '@/core/content/provider';
 import { setAuthProvider, getAuthProvider, isAuthEnabled } from '@/core/auth/provider';
+import { registerHooks } from '@/core/hooks';
 import { localContentProvider } from './local';
+import config from '../../astra.config';
 
 // -----------------------------------------------------------------------------
 // CURRENT PROVIDER: Local (JSON files in /content directory)
@@ -54,6 +56,11 @@ import { localContentProvider } from './local';
 // -----------------------------------------------------------------------------
 
 setContentProvider(localContentProvider);
+
+// Register lifecycle hooks (if configured in astra.config.ts)
+if (config.hooks) {
+  registerHooks(config.hooks);
+}
 
 // -----------------------------------------------------------------------------
 // AUTH PROVIDER: None (open access for local dev)

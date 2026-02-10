@@ -180,6 +180,21 @@ const config: AstraConfig = {
     revalidateInterval: 3600, // 1 hour fallback for ISR
     // rebuildWebhook: process.env.REBUILD_WEBHOOK_URL, // Uncomment for static mode
   },
+
+  // ==========================================================================
+  // LIFECYCLE HOOKS (optional)
+  // Fire after content operations. Errors are caught and logged, never break operations.
+  //
+  // hooks: {
+  //   async onPagePublished(page) {
+  //     console.log(`Published: ${page.title}`);
+  //     // Example: send webhook, notify Slack, invalidate CDN cache
+  //   },
+  //   async onPageDeleted(pageId) {
+  //     console.log(`Deleted page: ${pageId}`);
+  //   },
+  // },
+  // ==========================================================================
 };
 
 export default config;
