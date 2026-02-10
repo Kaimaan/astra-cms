@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { handleCorsPreFlight, addCorsHeaders } from '@/lib/cors';
 
 /**
  * Middleware for locale routing with geo-detection
@@ -86,6 +87,14 @@ function isValidLocaleFormat(locale: string): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Handle CORS for admin API routes
+  if (pathname.startsWith('/api/admin')) {
+    const preflightResponse = handleCorsPreFlight(request);
+    if (preflightResponse) return preflightResponse;
+    const response = NextResponse.next();
+    return addCorsHeaders(response, request);
+  }
 
   // Skip middleware for static files, api, and admin routes
   if (
