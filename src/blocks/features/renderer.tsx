@@ -1,6 +1,6 @@
 'use client';
 
-import type { BlockRendererProps } from '@/core/blocks/types';
+import type { BlockRendererProps } from '@/core/block-system/types';
 import type { FeaturesProps } from './index';
 import { cn } from '@/lib/cn';
 import * as LucideIcons from 'lucide-react';

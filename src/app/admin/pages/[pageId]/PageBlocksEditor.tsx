@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { BlockPicker } from '@/components/admin/BlockPicker';
-import type { BlockInstance } from '@/core/blocks/types';
+import type { BlockInstance } from '@/core/block-system/types';
 
 interface PageBlocksEditorProps {
   pageId: string;

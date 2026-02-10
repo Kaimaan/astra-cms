@@ -3,8 +3,8 @@
  */
 
 import { z } from 'zod';
-import type { BlockDefinition } from '@/core/blocks/types';
-import { registerBlock } from '@/core/blocks/registry';
+import type { BlockDefinition } from '@/core/block-system/types';
+import { registerBlock } from '@/core/block-system/registry';
 import { CTARenderer } from './renderer';
 
 // =============================================================================

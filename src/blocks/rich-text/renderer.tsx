@@ -1,7 +1,7 @@
 'use client';
 
 import DOMPurify from 'isomorphic-dompurify';
-import type { BlockRendererProps } from '@/core/blocks/types';
+import type { BlockRendererProps } from '@/core/block-system/types';
 import type { RichTextProps } from './index';
 import { cn } from '@/lib/cn';
 

@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import '@/blocks';
-import { getBlockDefinition } from '@/core/blocks/registry';
+import { getBlockDefinition } from '@/core/block-system/registry';
 import { getEditableFields } from '@/lib/schema/schema-to-fields';
 import type { EditableField } from '@/lib/schema/schema-to-fields';
-import { ServerIcon } from '@/lib/icons/ServerIcon';
+import { ServerIcon } from '@/components/icons/ServerIcon';
 import { categoryLabels, categoryColors } from '@/lib/blocks/category-meta';
-import type { BlockCategory } from '@/core/blocks/types';
+import type { BlockCategory } from '@/core/block-system/types';
 
 interface BlockDetailPageProps {
   params: Promise<{ type: string }>;

@@ -5,7 +5,7 @@
  * NO Next.js imports - pure TypeScript
  */
 
-import type { BlockInstance } from '../blocks/types';
+import type { BlockInstance } from '../block-system/types';
 
 // =============================================================================
 // PAGE

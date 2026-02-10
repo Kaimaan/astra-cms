@@ -1,6 +1,6 @@
 'use client';
 
-import type { BlockRendererProps } from '@/core/blocks/types';
+import type { BlockRendererProps } from '@/core/block-system/types';
 import type { HeroProps } from './index';
 import { cn } from '@/lib/cn';
 

@@ -6,7 +6,7 @@
  * Remove this comment when you start building.
  */
 
-import { getHtmlLang, isValidLocale } from '@/lib/i18n/config';
+import { getHtmlLang, isValidLocale } from '@/core/i18n/config';
 import { notFound } from 'next/navigation';
 import { Header, Footer } from '@/components/global';
 

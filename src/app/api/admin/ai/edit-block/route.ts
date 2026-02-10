@@ -3,7 +3,7 @@ import { getUsageProvider } from '@/core/ai/usage-provider';
 import { calculateCost } from '@/core/ai/pricing';
 import type { AIUsageRecord } from '@/core/ai/types';
 import '@/blocks';
-import { getBlockDefinition } from '@/core/blocks/registry';
+import { getBlockDefinition } from '@/core/block-system/registry';
 import { getEditableFields, schemaToDescription } from '@/lib/schema/schema-to-fields';
 import { validateBody } from '@/lib/validation/validate';
 import { editBlockSchema } from '@/lib/validation/schemas/ai-schemas';

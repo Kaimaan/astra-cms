@@ -8,8 +8,8 @@
  */
 
 import { type ComponentType } from 'react';
-import type { BlockInstance, BlockRendererProps } from '@/core/blocks/types';
-import { getBlockDefinition } from '@/core/blocks/registry';
+import type { BlockInstance, BlockRendererProps } from '@/core/block-system/types';
+import { getBlockDefinition } from '@/core/block-system/registry';
 
 // Ensure all blocks are registered
 import '@/blocks';

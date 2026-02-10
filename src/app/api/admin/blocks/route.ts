@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import '@/blocks';
-import { getAllBlocks } from '@/core/blocks/registry';
+import { getAllBlocks } from '@/core/block-system/registry';
 import { withAuth } from '@/core/auth/middleware';
 import { apiError, ErrorCode } from '@/lib/api-errors';
 

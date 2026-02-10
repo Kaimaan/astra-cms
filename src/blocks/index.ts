@@ -19,4 +19,4 @@ export {
   getBlocksByCategory,
   isBlockRegistered,
   getBlockTypes,
-} from '@/core/blocks/registry';
+} from '@/core/block-system/registry';

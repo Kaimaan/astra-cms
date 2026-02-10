@@ -9,7 +9,7 @@
 ## Usage
 
 ```tsx
-import { IconOrImageServer } from '@/lib/icons';
+import { IconOrImageServer } from '@/components/icons';
 
 // Any Lucide icon by PascalCase name
 <IconOrImageServer value="ShoppingBag" size="lg" />

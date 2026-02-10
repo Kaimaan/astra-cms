@@ -16,7 +16,7 @@ import { useEditMode } from './EditModeProvider';
 import { BlockPicker } from '@/components/admin/BlockPicker';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import { generateBlockId } from '@/core/blocks/types';
+import { generateBlockId } from '@/core/block-system/types';
 import * as LucideIcons from 'lucide-react';
 
 // Get a Lucide icon component by name

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import '@/blocks'; // trigger block registration
-import { getBlockDefinition } from '@/core/blocks/registry';
+import { getBlockDefinition } from '@/core/block-system/registry';
 import { getEditableFields } from '@/lib/schema/schema-to-fields';
 import { withAuthParams } from '@/core/auth/middleware';
 import { apiError, ErrorCode } from '@/lib/api-errors';

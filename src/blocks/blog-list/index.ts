@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import type { BlockDefinition } from '@/core/blocks/types';
-import { registerBlock } from '@/core/blocks/registry';
+import type { BlockDefinition } from '@/core/block-system/types';
+import { registerBlock } from '@/core/block-system/registry';
 import { BlogListRenderer } from './renderer';
 
 export const blogListSchema = z.object({

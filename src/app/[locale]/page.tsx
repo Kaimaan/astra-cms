@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { BlockRenderer } from '@/components/BlockRenderer';
 import { EditModePage } from '@/components/editor';
 import { getContentProvider } from '@/infrastructure';
-import { generatePageMetadata } from '@/lib/seo/metadata';
+import { generatePageMetadata } from '@/core/seo/metadata';
 import config from '../../../astra.config';
 
 // ISR: revalidate every hour (can be overridden by on-demand revalidation)

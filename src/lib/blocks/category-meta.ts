@@ -1,4 +1,4 @@
-import type { BlockCategory } from '@/core/blocks/types';
+import type { BlockCategory } from '@/core/block-system/types';
 
 export const categoryLabels: Record<BlockCategory, string> = {
   content: 'Content',

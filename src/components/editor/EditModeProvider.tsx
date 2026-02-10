@@ -17,7 +17,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Page } from '@/core/content/types';
-import type { BlockInstance } from '@/core/blocks/types';
+import type { BlockInstance } from '@/core/block-system/types';
 
 // =============================================================================
 // TYPES
