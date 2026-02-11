@@ -6,7 +6,7 @@ import type { FormProps, FormField } from './index';
 import { cn } from '@/lib/cn';
 
 // Known contact field names — these get mapped into the `contact` object
-const CONTACT_FIELDS = new Set(['email', 'name', 'phone', 'company']);
+const CONTACT_FIELDS = new Set(['email', 'name', 'firstName', 'middleName', 'lastName', 'phone', 'company']);
 
 export function FormRenderer({ props }: BlockRendererProps<FormProps>) {
   const { formId, formName, description, fields, submitLabel, successMessage } = props;

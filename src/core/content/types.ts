@@ -375,6 +375,9 @@ export interface FormSubmissionRecord {
   contact: {
     email?: string;
     name?: string;
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
     phone?: string;
     company?: string;
   };

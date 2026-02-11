@@ -60,7 +60,8 @@ export const formBlock = registerBlock<FormProps>({
     formId: 'contact',
     formName: 'Get in touch',
     fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
+      { name: 'firstName', label: 'First name', type: 'text', required: true },
+      { name: 'lastName', label: 'Last name', type: 'text', required: true },
       { name: 'email', label: 'Email', type: 'email', required: true },
       { name: 'message', label: 'Message', type: 'textarea', required: false },
     ],

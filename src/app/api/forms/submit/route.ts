@@ -30,6 +30,9 @@ const formSubmitSchema = z.object({
   contact: z.object({
     email: z.string().email().optional(),
     name: z.string().optional(),
+    firstName: z.string().optional(),
+    middleName: z.string().optional(),
+    lastName: z.string().optional(),
     phone: z.string().optional(),
     company: z.string().optional(),
   }),
