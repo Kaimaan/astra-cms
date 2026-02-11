@@ -178,11 +178,11 @@ export function PagesListClient({ initialPages }: PagesListClientProps) {
             <tbody className="bg-white divide-y divide-gray-200">
               {pages.map((page) => (
                 <tr key={page.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="font-medium text-gray-900">{page.title}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <code className="text-sm text-gray-600">/{getPageSlug(page.paths)}</code>
+                  <td className="px-6 py-4">
+                    <code className="text-sm text-gray-600 break-all">/{getPageSlug(page.paths)}</code>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span

@@ -397,24 +397,31 @@ function FeaturesPreview({ props }: { props: Record<string, unknown> }) {
 function CtaPreview({ props }: { props: Record<string, unknown> }) {
   const title = (props.title as string) || 'Call to Action';
   const description = (props.description as string) || '';
-  const buttonText = (props.buttonText as string) || 'Get Started';
-  const variant = (props.variant as string) || 'primary';
+  const cta = props.cta as { label?: string; href?: string; variant?: string } | undefined;
+  const secondaryCta = props.secondaryCta as { label?: string; href?: string; variant?: string } | undefined;
+  const variant = (props.variant as string) || 'default';
 
-  const bgClass = variant === 'primary'
-    ? 'bg-primary-600'
-    : variant === 'secondary'
-      ? 'bg-gray-900'
-      : 'bg-gray-100';
-  const textClass = variant === 'light' ? 'text-gray-900' : 'text-white';
+  const isHighlighted = variant === 'highlighted';
 
   return (
-    <section className={`py-16 ${bgClass}`}>
+    <section className={isHighlighted ? 'py-16 bg-primary-600' : 'py-16 bg-gray-50'}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 className={`text-3xl font-bold ${textClass} mb-4`}>{title}</h2>
-        {description && <p className={`text-lg mb-6 ${variant === 'light' ? 'text-gray-600' : 'text-gray-200'}`}>{description}</p>}
-        <span className="inline-block px-6 py-3 bg-white text-gray-900 rounded-lg font-medium">
-          {buttonText}
-        </span>
+        <h2 className={`text-3xl font-bold mb-4 ${isHighlighted ? 'text-white' : 'text-gray-900'}`}>{title}</h2>
+        {description && (
+          <p className={`text-lg mb-6 ${isHighlighted ? 'text-primary-100' : 'text-gray-600'}`}>{description}</p>
+        )}
+        <div className="flex flex-wrap justify-center gap-4">
+          {cta?.label && (
+            <span className={`inline-block px-6 py-3 rounded-lg font-medium ${isHighlighted ? 'bg-white text-primary-600' : 'bg-primary-500 text-white'}`}>
+              {cta.label}
+            </span>
+          )}
+          {secondaryCta?.label && (
+            <span className={`inline-block px-6 py-3 rounded-lg font-medium ${isHighlighted ? 'border-2 border-white text-white' : 'border-2 border-gray-300 text-gray-700'}`}>
+              {secondaryCta.label}
+            </span>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -434,7 +441,7 @@ function RichTextPreview({ props }: { props: Record<string, unknown> }) {
 // Video preview
 function VideoPreview({ props }: { props: Record<string, unknown> }) {
   const title = (props.title as string) || '';
-  const url = (props.url as string) || '';
+  const src = (props.src as string) || '';
 
   return (
     <section className="py-16 bg-gray-100">
@@ -443,7 +450,7 @@ function VideoPreview({ props }: { props: Record<string, unknown> }) {
         <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
           <div className="text-center">
             <span className="text-4xl">🎬</span>
-            <p className="text-gray-400 mt-2">{url ? 'Video: ' + url.substring(0, 40) + '...' : 'No video URL'}</p>
+            <p className="text-gray-400 mt-2">{src ? 'Video: ' + src.substring(0, 40) + '...' : 'No video URL'}</p>
           </div>
         </div>
       </div>

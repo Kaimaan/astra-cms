@@ -179,6 +179,22 @@ export interface NavigationConfig {
 }
 
 // =============================================================================
+// WEBHOOKS
+// =============================================================================
+
+export interface WebhookEndpoint {
+  /** URL to POST webhook payloads to */
+  url: string;
+  /** Shared secret for HMAC-SHA256 signature */
+  secret: string;
+}
+
+export interface WebhooksConfig {
+  /** Webhook for form submissions */
+  formSubmission?: WebhookEndpoint;
+}
+
+// =============================================================================
 // FULL CONFIG
 // =============================================================================
 
@@ -189,4 +205,5 @@ export interface AstraConfig {
   navigation: NavigationConfig;
   deployment?: DeploymentConfig;
   hooks?: HooksConfig;
+  webhooks?: WebhooksConfig;
 }

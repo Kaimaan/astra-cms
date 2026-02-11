@@ -355,6 +355,41 @@ export interface Asset {
 }
 
 // =============================================================================
+// FORM SUBMISSIONS
+// =============================================================================
+
+export interface FormSubmissionRecord {
+  /** Unique submission ID */
+  id: string;
+
+  /** Form identifier (e.g. "contact", "newsletter", "quote-request") */
+  formId: string;
+
+  /** Display name of the form */
+  formName?: string;
+
+  /** Page ID where the form was submitted */
+  pageId: string;
+
+  /** Structured contact fields (known shape for CRM deduplication by email) */
+  contact: {
+    email?: string;
+    name?: string;
+    phone?: string;
+    company?: string;
+  };
+
+  /** Arbitrary form fields (key-value, for dynamic/custom forms) */
+  fields: Record<string, string | number | boolean | string[]>;
+
+  /** Whether the user gave GDPR/privacy consent */
+  consentGiven?: boolean;
+
+  /** When the submission was created */
+  createdAt: Date;
+}
+
+// =============================================================================
 // UTILITIES
 // =============================================================================
 

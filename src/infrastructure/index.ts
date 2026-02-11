@@ -39,6 +39,8 @@
 import { setContentProvider, getContentProvider } from '@/core/content/provider';
 import { setAuthProvider, getAuthProvider, isAuthEnabled } from '@/core/auth/provider';
 import { registerHooks } from '@/core/hooks';
+import type { HooksConfig } from '@/core/hooks';
+import { sendWebhook } from '@/lib/webhook-sender';
 import { localContentProvider } from './local';
 import config from '../../astra.config';
 
@@ -57,9 +59,24 @@ import config from '../../astra.config';
 
 setContentProvider(localContentProvider);
 
-// Register lifecycle hooks (if configured in astra.config.ts)
-if (config.hooks) {
-  registerHooks(config.hooks);
+// Register lifecycle hooks (user-defined + auto-generated from webhooks config)
+const hooks: HooksConfig = { ...config.hooks };
+
+// Auto-wire webhook delivery for form submissions when webhooks.formSubmission is configured
+if (config.webhooks?.formSubmission) {
+  const { url, secret } = config.webhooks.formSubmission;
+  const userHook = hooks.onFormSubmitted;
+
+  hooks.onFormSubmitted = async (submission) => {
+    // Fire user-defined hook first (if any)
+    if (userHook) await userHook(submission);
+    // Deliver webhook
+    await sendWebhook(url, secret, 'form.submitted', submission, config.site.url);
+  };
+}
+
+if (Object.keys(hooks).length > 0) {
+  registerHooks(hooks);
 }
 
 // -----------------------------------------------------------------------------

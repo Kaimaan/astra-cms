@@ -195,6 +195,30 @@ const config: AstraConfig = {
   //   async onPageDeleted(pageId) {
   //     console.log(`Deleted page: ${pageId}`);
   //   },
+  //   async onFormSubmitted(submission) {
+  //     // Deliver form submission to an external service via webhook
+  //     // const { sendWebhook } = await import('./src/lib/webhook-sender');
+  //     // await sendWebhook(
+  //     //   process.env.ASTRA_WEBHOOK_FORM_URL!,
+  //     //   process.env.ASTRA_WEBHOOK_FORM_SECRET!,
+  //     //   'form.submitted',
+  //     //   submission,
+  //     //   config.site.url,
+  //     // );
+  //   },
+  // },
+  // ==========================================================================
+
+  // ==========================================================================
+  // WEBHOOKS (optional)
+  // Configure outbound webhooks for form submissions.
+  // When set, form submissions are automatically POSTed to the URL with HMAC signing.
+  //
+  // webhooks: {
+  //   formSubmission: {
+  //     url: process.env.ASTRA_WEBHOOK_FORM_URL || 'https://crm.example.com/api/webhooks/cms',
+  //     secret: process.env.ASTRA_WEBHOOK_FORM_SECRET || 'whsec_change_me',
+  //   },
   // },
   // ==========================================================================
 };

@@ -6,7 +6,7 @@
  * NO Next.js imports - pure TypeScript
  */
 
-import type { Page, Asset, Site } from '../content/types';
+import type { Page, Asset, Site, FormSubmissionRecord } from '../content/types';
 
 export interface HooksConfig {
   /** Fires after a page is published */
@@ -29,4 +29,7 @@ export interface HooksConfig {
 
   /** Fires after site config (header, footer, globals) is updated */
   onConfigChanged?: (config: Site) => Promise<void>;
+
+  /** Fires after a form submission is received */
+  onFormSubmitted?: (submission: FormSubmissionRecord) => Promise<void>;
 }
