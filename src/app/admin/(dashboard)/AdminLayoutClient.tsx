@@ -2,10 +2,18 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+
+interface AuthUser {
+  id: string;
+  email: string;
+  name?: string;
+  role: string;
+}
 
 interface AdminLayoutClientProps {
   children: ReactNode;
+  user?: AuthUser;
 }
 
 interface NavItem {
@@ -109,6 +117,7 @@ const navItems: NavItem[] = [
     ),
     children: [
       { href: '/admin/settings', label: 'General' },
+      { href: '/admin/settings/members', label: 'Members' },
       { href: '/admin/settings/usage', label: 'AI Usage & Costs' },
       { href: '/admin/settings/seo', label: 'SEO' },
       { href: '/admin/settings/integrations', label: 'Integrations' },
@@ -116,8 +125,24 @@ const navItems: NavItem[] = [
   },
 ];
 
-function AdminSidebar() {
+function AdminSidebar({ user }: { user?: AuthUser }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST' });
+      router.push('/admin/login');
+    } catch {
+      setLoggingOut(false);
+    }
+  };
+
+  const displayName = user?.name || user?.email || 'Admin';
+  const displayEmail = user?.email || 'admin@astra.cms';
+  const avatarLetter = (user?.name?.[0] || user?.email?.[0] || 'A').toUpperCase();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(() => {
     const expanded: string[] = [];
@@ -300,14 +325,28 @@ function AdminSidebar() {
             collapsed ? 'justify-center' : 'gap-3 px-3'
           } py-2 rounded-lg text-sm text-gray-500`}
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600 font-medium text-xs">
-            A
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600 font-medium text-xs shrink-0">
+            {avatarLetter}
           </div>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-700 truncate">Admin</p>
-              <p className="text-xs text-gray-400 truncate">admin@astra.cms</p>
-            </div>
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-700 truncate">{displayName}</p>
+                <p className="text-xs text-gray-400 truncate">{displayEmail}</p>
+              </div>
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
+                  title="Sign out"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -378,10 +417,10 @@ function AdminHeader() {
   );
 }
 
-export default function AdminLayoutClient({ children }: AdminLayoutClientProps) {
+export default function AdminLayoutClient({ children, user }: AdminLayoutClientProps) {
   return (
     <div className="min-h-screen bg-gray-50/50 flex overflow-hidden">
-      <AdminSidebar />
+      <AdminSidebar user={user} />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader />
         <main className="flex-1 p-6 overflow-auto scrollbar-thin">{children}</main>

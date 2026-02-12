@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { getAllBlocks, getBlocksByCategory } from '../../../core/block-system/registry';
-import type { BlockCategory, BlockDefinition } from '../../../core/block-system/types';
+import { getAllBlocks, getBlocksByCategory } from '@/core/block-system/registry';
+import type { BlockCategory, BlockDefinition } from '@/core/block-system/types';
 import { ServerIcon } from '@/components/icons/ServerIcon';
 import { getEditableFields } from '@/lib/schema/schema-to-fields';
 import { categoryLabels, categoryColors } from '@/lib/blocks/category-meta';

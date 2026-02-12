@@ -4,8 +4,8 @@
  * Higher-order functions that wrap route handlers with
  * authentication and permission checks.
  *
- * When no AuthProvider is configured, routes stay open (local dev).
- * When configured, requests are verified and checked against RBAC.
+ * When no users exist, routes stay open (zero-config local dev).
+ * When users exist, requests are verified via session cookie and checked against RBAC.
  *
  * Two variants:
  * - withAuth: for routes without dynamic params
@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthProvider, isAuthEnabled } from './provider';
+import { isAuthEnabled, getSessionFromRequest, verifySession } from './session';
 import { canAccess } from './types';
 import type { User } from './types';
 import { apiError, ErrorCode } from '@/lib/api-errors';
@@ -25,7 +25,7 @@ export interface AuthContext {
   user: User;
 }
 
-// Stub user for local dev (no auth provider configured)
+// Stub user for local dev (no users created yet)
 const LOCAL_DEV_USER: User = {
   id: 'local',
   email: 'local@localhost',
@@ -34,30 +34,28 @@ const LOCAL_DEV_USER: User = {
 };
 
 /**
- * Shared auth logic: verify request and check permissions.
+ * Shared auth logic: verify session cookie and check permissions.
  * Returns AuthContext on success, or a NextResponse error.
  */
 async function authenticate(
   permission: string,
   request: NextRequest
 ): Promise<AuthContext | NextResponse> {
-  // Zero-config: no auth provider = open access
-  if (!isAuthEnabled()) {
+  // Zero-config: no users = open access
+  if (!(await isAuthEnabled())) {
     return { user: LOCAL_DEV_USER };
   }
 
-  // Auth is configured — verify the request
-  const provider = getAuthProvider()!;
-
-  let user: User | null;
-  try {
-    user = await provider.verifyRequest(request);
-  } catch {
+  // Check for session cookie
+  const sessionId = getSessionFromRequest(request);
+  if (!sessionId) {
     return apiError('Authentication required', ErrorCode.UNAUTHORIZED, 401);
   }
 
+  // Verify session and get user
+  const user = await verifySession(sessionId);
   if (!user) {
-    return apiError('Authentication required', ErrorCode.UNAUTHORIZED, 401);
+    return apiError('Session expired', ErrorCode.UNAUTHORIZED, 401);
   }
 
   // Check permission

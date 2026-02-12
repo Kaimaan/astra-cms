@@ -1,16 +1,18 @@
 /**
  * Auth Module
  *
- * Provider-agnostic authentication and authorization.
+ * Built-in session-cookie authentication and authorization.
  */
 
 // Types
 export type { User, Role } from './types';
 export { hasPermission, canAccess, ROLE_PERMISSIONS } from './types';
 
-// Provider
-export type { AuthProvider } from './provider';
-export { setAuthProvider, getAuthProvider, isAuthEnabled } from './provider';
+// Session
+export { isAuthEnabled, verifySession, SESSION_COOKIE } from './session';
+
+// Storage
+export { hasAnyUsers } from './storage';
 
 // Middleware
 export type { AuthContext } from './middleware';
